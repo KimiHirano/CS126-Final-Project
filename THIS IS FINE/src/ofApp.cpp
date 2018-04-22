@@ -2,8 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-	std::cout << "w" << std::endl;
-
+	srand(static_cast<unsigned>(time(0)));
 	Platform first_platform;
 	first_platform.setLeftXCoordinate(0);
 	platforms_.push_back(first_platform);
@@ -93,13 +92,16 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 void ofApp::updatePlatforms()
 {
-	for (Platform p : platforms_) {
+	for (int i = 0; i < platforms_.size(); i++) {
+		platforms_.at(i).shiftLeft(amount_moved_);
+	}
+	/*for (Platform p : platforms_) {
 		std::cout << p.getLeftXCoordinate() << ",";
 		p.shiftLeft(amount_moved_);
 		std::cout << p.getLeftXCoordinate() << std::endl;
 
-	}
-	//addPlatforms();
+	}*/
+	addPlatforms();
 }
 
 void ofApp::addPlatforms()
