@@ -8,3 +8,6 @@
 * also my tendency to leave things til the last minute?
   * some people call it "procrastination" i prefer to call it "extreme time management"
   * diamonds are made under pressure
+* installing essentia 
+  * when installing dependencies, "sudo apt-get install build-essential libyaml-dev libfftw3-dev libavcodec-dev libavformat-dev libavutil-dev libavresample-dev python-dev libsamplerate0-dev libtag1-dev libchromaprint-dev python-six" didn't work
+  * had to install libraries individually (libavcodec-dev, libavformat-dev, libavutil-dev, libavresample-dev, and libchromaprint-dev libraries wouldn't install but I don't think I'll need them because they're used mostly for loading/saving audio files and audio fingerprinting)
