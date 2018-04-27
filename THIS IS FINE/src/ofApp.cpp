@@ -8,6 +8,37 @@ void ofApp::setup(){
 	platforms_.push_back(first_platform);
 	addPlatforms();
 	player_.setPlayerPosition(first_platform);
+	soundStream.printDeviceList();
+
+	ofSetVerticalSync(true);
+	ofSetCircleResolution(80);
+	ofBackground(54, 54, 54);
+
+	// 0 output channels, 
+	// 2 input channels
+	// 44100 samples per second
+	// 256 samples per buffer
+	// 4 num buffers (latency)
+
+	soundStream.printDeviceList();
+
+	//if you want to set a different device id 
+	//soundStream.setDeviceID(0); //bear in mind the device id corresponds to all audio devices, including  input-only and output-only devices.
+
+	int bufferSize = 256;
+
+
+	left.assign(bufferSize, 0.0);
+	right.assign(bufferSize, 0.0);
+	volHistory.assign(400, 0.0);
+
+	bufferCounter = 0;
+	drawCounter = 0;
+	smoothedVol = 0.0;
+	scaledVol = 0.0;
+
+	soundStream.setup(this, 0, 2, 44100, bufferSize, 4);
+
 }
 
 //--------------------------------------------------------------
@@ -33,7 +64,6 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
 	if (key == OF_KEY_RIGHT) {
-		std::cout << "k" << std::endl;
 		amount_moved_ += 100;
 		update();
 		amount_moved_ = 0;
@@ -93,6 +123,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 void ofApp::updatePlatforms()
 {
 	for (int i = 0; i < platforms_.size(); i++) {
+		
 		platforms_.at(i).shiftLeft(amount_moved_);
 	}
 	/*for (Platform p : platforms_) {
@@ -114,6 +145,29 @@ void ofApp::addPlatforms()
 		next_platform.setLeftXCoordinate(last_right_x_coordinate + next_platform.getDistanceFromPrevPlatform());
 		platforms_.push_back(next_platform);
 		last_right_x_coordinate = next_platform.getRightXCoordinate();
+	}
+}
+
+void ofApp::audioIn(float * input, int bufferSize, int nChannels)
+{
+	float curVol = 0.0;
+
+	// samples are "interleaved"
+	int numCounted = 0;
+
+	//lets go through each sample and calculate the root mean square which is a rough way to calculate volume	
+	for (int i = 0; i < bufferSize; i++) {
+		left[i] = input[i * 2] * 0.5;
+		right[i] = input[i * 2 + 1] * 0.5;
+
+		curVol += left[i] * left[i];
+		curVol += right[i] * right[i];
+		numCounted += 2;
+	}
+
+	if (curVol > 2.0) {
+		amount_moved_ += 2;
+		updatePlatforms();
 	}
 }
 

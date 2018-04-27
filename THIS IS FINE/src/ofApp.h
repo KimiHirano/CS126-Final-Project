@@ -1,19 +1,24 @@
 #pragma once
 
 #include "ofMain.h"
+
 #include "player.h"
 #include "platform.h"
 #include <utility>
 
+//need something for keeping score
+//keep score by counting platforms
+
 class ofApp : public ofBaseApp{
 	enum GameState {
-		IN_PROGRESS = 0,
-		PAUSED,
+		START_SCREEN, //need drawStartScreen() dog on fire meme, press s to start
+		IN_PROGRESS = 0, 
+		PAUSED, //idk if im gonna implement a paused state
 		FINISHED
 	};
 
     private:
-		GameState current_state_ = IN_PROGRESS;
+		GameState current_state_ = START_SCREEN;
 		Player player_;
 		std::vector<Platform> platforms_;
 		bool should_move_platforms_ = true;
@@ -36,7 +41,25 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
+		void audioIn(float * input, int bufferSize, int nChannels);
+
 		void updatePlatforms();
 		void addPlatforms();
+
+		void drawStart();
+		void drawEnd();
+		void drawPaused();
+
+		vector <float> left;
+		vector <float> right;
+		vector <float> volHistory;
+
+		int bufferCounter;
+		int drawCounter;
+
+		float smoothedVol;
+		float scaledVol;
+
+		ofSoundStream soundStream;
 		
 };
