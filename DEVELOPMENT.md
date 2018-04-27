@@ -16,3 +16,6 @@
   * apparently this is mostly only a problem on windows because small parts of the way ofSoundStream works are platform specific
   * in ofRtAudioSoundStream.cpp, line 106 - changed from:
   `<audio = shared_ptr<RtAudio>(new RtAudio());>` to `<audio = shared_ptr<RtAudio>(new RtAudio(RtAudio::Api::WINDOWS_DS));>`
+* when I was trying to load and draw images the images would show up as a black rectangle unless I wrote `<ofSetColor(255);>` on the line before
+* calling ofSetBackgroundColor once won't permanently change the background color
+  * have to keep calling it in draw() I think because the background gets cleared automatically before the draw() command apparently

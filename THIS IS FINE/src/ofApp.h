@@ -22,7 +22,7 @@ class ofApp : public ofBaseApp{
 		Player player_;
 		std::vector<Platform> platforms_;
 		bool should_move_platforms_ = true;
-		int amount_moved_;
+		float amount_moved_;
 
 	public:
 		void setup();
@@ -49,6 +49,9 @@ class ofApp : public ofBaseApp{
 		void drawStart();
 		void drawEnd();
 		void drawPaused();
+
+		ofImage fire;
+		ofImage dog;
 
 		vector <float> left;
 		vector <float> right;

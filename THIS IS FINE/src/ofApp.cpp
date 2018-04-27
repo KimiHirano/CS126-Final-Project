@@ -2,6 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+	ofSetBackgroundColor(255); //white i think
 	srand(static_cast<unsigned>(time(0)));
 	Platform first_platform;
 	first_platform.setLeftXCoordinate(0);
@@ -9,6 +10,9 @@ void ofApp::setup(){
 	addPlatforms();
 	player_.setPlayerPosition(first_platform);
 	soundStream.printDeviceList();
+
+	fire.load("fireboi1.jpg");
+	dog.load("doggo.png");
 
 	ofSetVerticalSync(true);
 	ofSetCircleResolution(80);
@@ -19,8 +23,6 @@ void ofApp::setup(){
 	// 44100 samples per second
 	// 256 samples per buffer
 	// 4 num buffers (latency)
-
-	soundStream.printDeviceList();
 
 	//if you want to set a different device id 
 	//soundStream.setDeviceID(0); //bear in mind the device id corresponds to all audio devices, including  input-only and output-only devices.
@@ -52,13 +54,22 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-	ofSetColor(player_.getColor());
-	ofDrawRectangle(player_.getXCoordinate(), player_.getYCoordinate(), player_.getPlayerWidth(), player_.getPlayerHeight());
+	ofSetBackgroundColor(255); //white
 
+	ofSetColor(255);
+	fire.draw(0, 400, 1024, 400);
+	
+	ofSetColor(255);
+	dog.draw(player_.getXCoordinate(), player_.getYCoordinate(), 75, 75);
+
+	/*ofSetColor(player_.getColor());
+	ofDrawRectangle(player_.getXCoordinate(), player_.getYCoordinate(), player_.getPlayerWidth(), player_.getPlayerHeight());
+*/
 	for (Platform p : platforms_) {
 		ofSetColor(p.getPlatformColor());
 		ofDrawRectangle(p.getLeftXCoordinate(), 1024 - p.getHeight(), p.getWidth(), p.getHeight());
 	}
+
 }
 
 //--------------------------------------------------------------
@@ -166,7 +177,7 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 	}
 
 	if (curVol > 2.0) {
-		amount_moved_ += 2;
+		amount_moved_ += 0.5;
 		updatePlatforms();
 	}
 }
