@@ -3,9 +3,9 @@
 Platform::Platform()
 {
 	rand_num_generator_ = std::mt19937(rand());
-	rand_width_val_ = std::uniform_int_distribution<>(100,300);
-	rand_height_val_ = std::uniform_int_distribution<>(100, 400);
-	rand_dist_between_platforms_ = std::uniform_int_distribution<>(50,100);
+	rand_width_val_ = std::uniform_int_distribution<>(100,500);
+	rand_height_val_ = std::uniform_int_distribution<>(200, 400);
+	rand_dist_between_platforms_ = std::uniform_int_distribution<>(50,200);
 	width_ = rand_width_val_(rand_num_generator_);
 	height_ = rand_height_val_(rand_num_generator_);
 	distance_from_prev_platform_ = rand_dist_between_platforms_(rand_num_generator_);

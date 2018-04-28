@@ -4,6 +4,7 @@
 
 #include "player.h"
 #include "platform.h"
+#include "fontloader.h"
 #include <utility>
 
 //need something for keeping score
@@ -24,7 +25,26 @@ class ofApp : public ofBaseApp{
 		bool should_move_platforms_ = true;
 		float amount_moved_;
 
+		vector<float> platform_x_displacements_;
+
+		Platform current_platform_; //the current platform whose left most x-coordinate is at least the value position as the player's x-coordinate
+									//updates every time the next platform reaches this value 
+
+		const int player_x_coordinate_ = 50;
+		float window_width_;
+		float window_height_;
+
+		const int title_font_modifier_ = 10;
+		bool title_font_is_loading_ = false;
+		bool title_font_loaded_ = false; //for checking to see if the initial font has been loaded or if it has been loaded after the window has been resized
+		FontLoader title_font_loader_;
+		ofTrueTypeFont title_font_;
+		
+		ofTrueTypeFont title2_font_;
+
 	public:
+		bool should_update_ = true;
+
 		void setup();
 		void update();
 		void draw();
@@ -43,15 +63,21 @@ class ofApp : public ofBaseApp{
 
 		void audioIn(float * input, int bufferSize, int nChannels);
 
-		void updatePlatforms();
-		void addPlatforms();
+		void updatePlayerPosition();
+
+		void updatePlatforms();			//changes all the x-coordinates of the platforms
+										//removes platforms whose x-cordinates have gone out of bounds
+										//adds enough platforms to fill the window
+										//updates current platform if necessary
+
+		void addPlatforms();			//adds enough platforms to platforms_ to fill the window
 
 		void drawStart();
 		void drawEnd();
 		void drawPaused();
 
-		ofImage fire;
-		ofImage dog;
+		ofImage fire_;
+		ofImage dog_;
 
 		vector <float> left;
 		vector <float> right;
