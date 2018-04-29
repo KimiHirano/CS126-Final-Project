@@ -13,7 +13,7 @@
 class ofApp : public ofBaseApp{
 	enum GameState {
 		START_SCREEN, //need drawStartScreen() dog on fire meme, press s to start
-		IN_PROGRESS = 0, 
+		IN_PROGRESS, 
 		PAUSED, //idk if im gonna implement a paused state
 		FINISHED
 	};
@@ -75,6 +75,8 @@ class ofApp : public ofBaseApp{
 		void drawStart();
 		void drawEnd();
 		void drawPaused();
+		void drawPlatforms();
+		void drawPlayer();
 
 		ofImage fire_;
 		ofImage dog_;

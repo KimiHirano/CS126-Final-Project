@@ -13,6 +13,7 @@
 	//when the user presses keys/uses voice to move their character, the character doesn't actually move in the x direction only the y direction
 	//the platforms are the things that move in the x direction
 	//movement represented by subtracting from all the x coordinates for the platforms and updating the screen
+//need to add a resize method
 class Platform {
 private:
 	std::mt19937 rand_num_generator_;

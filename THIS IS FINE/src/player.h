@@ -14,23 +14,33 @@ private:
 	const int player_height_ = 75;
 	ofRectangle player_body_;
 	ofColor color_ = ofColor::aquamarine;
+
+	float jump_height_;
+	float jump_increment_ = 10;
+
 	vector<float> jump_coordinates_;
 	float acceleration;
-	bool is_jumping_ = false;
-	bool finished_jump_ = false;
+	
 	const float time_ = 0.001;
 	const float gravity_mpss_ = -9.8; //acceleration due to gravity is ~-9.8 m/s^2
 
-	vector<float> jump(float initial_velocity);	//calculates y coordinates for a jump given initial velocity
-										//sets is_jumping to true and finished_jump_ to false
-
 public:
 	Player();
+
+	bool is_jumping_ = false;
+	bool finished_jump_ = false;
+	bool curr_direction_up_ = false;
+	bool player_dead_ = false;
+	
+	int window_h_;
+
+	Platform curr_platform_;
+
 	int getXCoordinate();
 	int getYCoordinate();
 	int getPlayerWidth();
 	int getPlayerHeight();
-	bool getIsJumping();
+	
 	ofColor Player::getColor();
 	ofRectangle Player::getBody();
 	void setPlayerPosition(Platform current_platform); //to set the player's initial position at the start of the game so that it starts at the right height
@@ -42,5 +52,9 @@ public:
 	vector<float> smallJump();	// fills jump_coordinates with y-coordinates for a small jump of max height 52
 
 	void endJump();
+
+	void jump(float height, int window_height);
+
+	void update();
 
 };

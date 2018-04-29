@@ -6,6 +6,7 @@ void ofApp::setup(){
 	srand(static_cast<unsigned>(time(0)));
 	Platform first_platform;
 	first_platform.setLeftXCoordinate(0);
+	current_platform_ = first_platform;
 	platforms_.push_back(first_platform);
 	addPlatforms();
 	player_.setPlayerPosition(first_platform);
@@ -41,6 +42,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
+	//does it make more sense to put this in the window resized method?
 	if (!title_font_is_loading_ && !title_font_loaded_) {
 		int min_dimension = min(ofGetWindowHeight(), ofGetWindowWidth());
 		int title_font_size = min_dimension / title_font_modifier_;
@@ -53,6 +55,7 @@ void ofApp::update(){
 		title_font_ = title_font_loader_.font_;
 		title_font_loaded_ = true;
 		title_font_is_loading_ = false;
+		title_font_loader_.stopThread();
 	}
 
 
@@ -60,11 +63,12 @@ void ofApp::update(){
 		//check if the player is either jumping and above the height of the next/current rectangle
 		//or is currently on the platform
 		//or has landed from a jump - update score
+
 		//or has died
 		//current_state_ = FINISHED;
 	}
 	should_update_ = true;
-	should_update_ = true;
+	player_.update();
 	if (platform_x_displacements_.size() > 0) {
 		updatePlatforms();
 		updatePlayerPosition();
@@ -79,6 +83,8 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+	ofSetBackgroundColor(255); //white i think
+
 	if (current_state_ == GameState::START_SCREEN) {
 		drawStart();
 	}
@@ -86,23 +92,26 @@ void ofApp::draw(){
 		//drawEnd();
 	}
 	else if (current_state_ == GameState::PAUSED) {
+		//drawGamePaused
+	}
+	else {
+		//drawPlatforms();
 
+		//drawPlayer();
+
+	ofSetColor(255);
+	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
+	
+	ofSetColor(255);
+	dog_.draw(player_.getXCoordinate(), player_.getYCoordinate(), 75, 75);
+
+	for (Platform p : platforms_) {
+		ofSetColor(p.getPlatformColor());
+		ofDrawRectangle(p.getLeftXCoordinate(), 1024 - p.getHeight(), p.getWidth(), p.getHeight());
+	}
 	}
 
-	//drawPlayer();
-	//drawPlatforms();
-	ofSetBackgroundColor(255); //white
-
-	//ofSetColor(255);
-	//fire_.draw(0, 400, 1024, 400);
-	//
-	//ofSetColor(255);
-	//dog_.draw(player_.getXCoordinate(), player_.getYCoordinate(), 75, 75);
-
-	//for (Platform p : platforms_) {
-	//	ofSetColor(p.getPlatformColor());
-	//	ofDrawRectangle(p.getLeftXCoordinate(), 1024 - p.getHeight(), p.getWidth(), p.getHeight());
-	//}
+	
 
 }
 
@@ -161,7 +170,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 }
 
 void ofApp::updatePlatforms()
-{
+{/*
 	if (platform_x_displacements_.size() > 0) {
 		for (int i = 0; i < platforms_.size(); i++) {
 			platforms_.at(i).shiftLeft(platform_x_displacements_.at(0));
@@ -169,13 +178,16 @@ void ofApp::updatePlatforms()
 		addPlatforms();
 		platform_x_displacements_.erase(platform_x_displacements_.begin());
 	}
-	else if (amount_moved_ > 0){
+	else*/ if (amount_moved_ > 0){
 		for (int i = 0; i < platforms_.size(); i++) {
 			platforms_.at(i).shiftLeft(amount_moved_);
+			if (platforms_.at(i).getLeftXCoordinate() < player_x_coordinate_ &&
+				platforms_.at(i).getLeftXCoordinate() + platforms_.at(i).getWidth() > player_x_coordinate_) {
+				current_platform_ = platforms_.at(i);
+			}
 		}
 		addPlatforms();
 	}
-	
 }
 
 void ofApp::addPlatforms()
@@ -219,23 +231,20 @@ void ofApp::drawStart()
 		int xpos = (ofGetWindowWidth() / 2) - (title_box.getWidth() / 2);
 		title_font_.drawStringAsShapes(title, xpos, title_font_.getLineHeight());
 
-		string title2 = "a voice controlled game\n  (scream to start)";
+		string title2 = "a voice controlled game\n   (scream to start)";
 		title2_font_ = title_font_;
 		title2_font_.setLetterSpacing(0.7);
 		title2_font_.setLineHeight(title_font_.getLineHeight() / 2);
 		ofRectangle title2_box = title2_font_.getStringBoundingBox(title2, 0, title2_font_.getLineHeight());
 		int xpos2 = (ofGetWindowWidth() / 2) - (title2_box.getWidth() / 2);
 		int ypos2 = title_font_.getLineHeight() * 2;
-		title2_font_.drawStringAsShapes(title2, xpos2, ypos2);
-
-		
+		title2_font_.drawStringAsShapes(title2, xpos2, ypos2);		
 	}
-	
 }
 
 void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
-
+	float screaming = 20;
 	float small_jump_vol = 7;
 	float med_jump_vol = 10;
 	float big_jump_vol = 13;
@@ -251,25 +260,36 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 		curVol += right[i] * right[i];
 	}
 
+	if (current_state_ == GameState::START_SCREEN) {
+		if (curVol > screaming) {
+			current_state_ = GameState::IN_PROGRESS;
+		}
+	}
+	else if (current_state_ == GameState::IN_PROGRESS) {
+		if (!player_.is_jumping_) {
+			if (curVol > 10) {
+				cout << "k" << endl;
+				player_.jump((curVol * 10), ofGetWindowHeight());
+				player_.curr_platform_ = current_platform_;
+			}
+			if (curVol > 2.0) {
+				amount_moved_ += 0.5;
 
-	if (!player_.getIsJumping()) {
-		if (curVol > 2.0) {
-			amount_moved_ += 0.5;
-
-			/*if (curVol > big_jump_vol) {
+				/*if (curVol > big_jump_vol) {
 				platform_x_displacements_ = player_.bigJump();
-			}
-			else if (curVol > med_jump_vol) {
+				}
+				else if (curVol > med_jump_vol) {
 				platform_x_displacements_ = player_.medJump();
-			}
-			else if (curVol > small_jump_vol) {
+				}
+				else if (curVol > small_jump_vol) {
 				platform_x_displacements_ = player_.smallJump();
-			}*/
+				}*/
+
+			}
+			updatePlatforms();
 
 		}
-		updatePlatforms();
-
-	}	
+	}		
 }
 
 void ofApp::updatePlayerPosition()

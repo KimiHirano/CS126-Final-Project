@@ -21,4 +21,9 @@
 	* have to keep calling it in draw() I think because the background gets cleared automatically before the draw() command apparently
 * I was trying to make it so that the title screen font resizes when the window resizes, but that means I have to reload the font with a different size, and when it did this a black rectangle would appear over the area where the font was supposed to appear
 	* made a seperate font loading thread for loading the fonts
-	* idk if this was super necessary though? or what kind of implications this might have on the running of the game? it shouldn't be to bad though because it's only for the title screen
+	* idk if this was super necessary though? or what kind of implications this might have on the running of the game? it shouldn't be too bad though because it's only for the title screen
+* Getting the player to jump properly:
+	* at first instead of jumping, the player would sink because I had the coordinate system backwards whoops
+		* top left corner is (0,0)!!!
+	* the platforms not moving during the player's jump
+	* need a way to figure out whether the player made it onto a platform or fell between the platforms
