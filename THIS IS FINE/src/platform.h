@@ -3,42 +3,45 @@
 #include <ofColor.h>
 #include<stdlib.h>
 
-//need something to represent the platforms visually (just rectangles)
-//need something to represent the location of the platform
-//need at least a left most x coordinate and a right most x coordinate (maybe a range?)
-//need a max y coordinate for the platform
-//generating new platforms:
-	//at the start of the game, generate platforms until there the last platform's rightmost x coordinate is more than the 
-//moving the platforms:
-	//when the user presses keys/uses voice to move their character, the character doesn't actually move in the x direction only the y direction
-	//the platforms are the things that move in the x direction
-	//movement represented by subtracting from all the x coordinates for the platforms and updating the screen
-//need to add a resize method
+//TODO: add necessary comments for methods
+//TODO: need tests for ...
 class Platform {
 private:
 	std::mt19937 rand_num_generator_;
-	std::uniform_int_distribution<> rand_width_val_;
-	std::uniform_int_distribution<> rand_height_val_;
-	std::uniform_int_distribution<> rand_dist_between_platforms_;
-	int distance_from_prev_platform_;
-	int right_x_coordinate_;
-	int left_x_coordinate_;
-	int width_; //generate random x coordinate within this range: __ (depending on window size and location of this platform's left x coordinate)
-	int height_; //generate random y coordinate within this range: __ (depending on window size)
-	const ofColor platform_color_ = ofColor::black;
+	std::uniform_real_distribution<> rand_width_val_;
+	std::uniform_real_distribution<> rand_height_val_;
+	std::uniform_real_distribution<> rand_dist_between_platforms_;
+
+	float w_proportion_; //the proportion of the window width that the platform width should be
+	float h_proportion_; //the proportion of the window height that the platform height should be
+	float d_proportion_; // the proportion of the window width that the platform distance_from_prev_platform_ should be
+
+	int width_;
+	int height_;
+	int distance_to_next_platform_;
+	int right_x_;
+	int left_x_;
+	int y_;
+
+	static const ofColor platform_color_;
 
 public:
-	Platform();
-	Platform& operator=(const Platform& other);
-	~Platform();
+	void initialize(int window_width, int window_height, int x);
+
+	//getters
 	int getLeftXCoordinate();
 	int getRightXCoordinate();
-	int getDistanceFromPrevPlatform();
+	int getY();
+	int getDistanceToNextPlatform();
 	int getWidth();
 	int getHeight();
 	ofColor getPlatformColor();
-	void setLeftXCoordinate(int x_coordinate);
+
+	//setters
+	void setLeftXCoordinate(int x_coordinate); //not sure if needed
+	void setWidthProportion(float wp, int window_width); //only intended to be used for setting the first platform width
+
 	bool canShiftLeft(int shift_amount); //returns true if this platform can be shifted and still remain visible in the window
 	void shiftLeft(int shift_amount);
-	void setWidth(int w);
+	void resize(float window_w, float window_h, int prev_right_x, int prev_d);
 };

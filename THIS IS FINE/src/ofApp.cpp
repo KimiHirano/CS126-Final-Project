@@ -1,16 +1,30 @@
 #include "ofApp.h"
 
+//TODO: need a way to pause the game right after switching between the start screen and the game screen
+//so the player doesn't immediately start moving due to some remnants of the initial screaming lmao
+
+//TODO: add function comments
+//TODO: add way to check if player has landed on a platform or has landed in between platforms
+//TODO: fix line spacing
+//TODO: maybe clean up setup method a lil
+
 //--------------------------------------------------------------
 void ofApp::setup(){
-	ofSetBackgroundColor(255); //white i think
+	//ofSetBackgroundColor(255); //white i think
+	
 	srand(static_cast<unsigned>(time(0)));
+
 	Platform first_platform;
-	first_platform.setLeftXCoordinate(0);
+	first_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), 0);
+	first_platform.setWidthProportion(0.6, ofGetWindowWidth());
+
 	current_platform_ = first_platform;
 	platforms_.push_back(first_platform);
+
 	addPlatforms();
-	player_.setPlayerPosition(first_platform);
-	soundStream.printDeviceList();
+
+	player_.initialize(ofGetWindowWidth(), ofGetWindowHeight(), first_platform.getY());
+	//soundStream.printDeviceList();
 
 	fire_.load("fireboi1.jpg");
 	dog_.load("doggo.png");
@@ -68,13 +82,13 @@ void ofApp::update(){
 		//current_state_ = FINISHED;
 	}
 	should_update_ = true;
-	player_.update();
-	if (platform_x_displacements_.size() > 0) {
+	player_.updatePosition();
+	/*if (platform_x_displacements_.size() > 0) {
 		updatePlatforms();
 		updatePlayerPosition();
 		draw();
 	}
-	else if(amount_moved_ > 0){
+	else*/ if(amount_moved_ > 0){
 		updatePlatforms();
 		draw();
 		amount_moved_ = 0;
@@ -103,11 +117,11 @@ void ofApp::draw(){
 	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
 	
 	ofSetColor(255);
-	dog_.draw(player_.getXCoordinate(), player_.getYCoordinate(), 75, 75);
+	dog_.draw(player_.getXCoordinate(), player_.getYCoordinate(), player_.getPlayerWidth(), player_.getPlayerHeight());
 
 	for (Platform p : platforms_) {
-		ofSetColor(p.getPlatformColor());
-		ofDrawRectangle(p.getLeftXCoordinate(), 1024 - p.getHeight(), p.getWidth(), p.getHeight());
+		ofSetColor(0);
+		ofDrawRectangle(p.getLeftXCoordinate(), ofGetWindowHeight() - p.getHeight(), p.getWidth(), p.getHeight());
 	}
 	}
 
@@ -157,6 +171,23 @@ void ofApp::mouseExited(int x, int y){
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
 	title_font_loaded_ = false;
+	player_.resize(w, h);
+
+	int prev_right_x;	//the right most coordinate of the previous platform
+	int prev_d;		//the distance between the previous platform and the current platform
+	for (int i = 0; i < platforms_.size(); i++) {
+
+		//prev_right_x and prev_d are added to get the value of the current platform's left x-coordinate
+		//so for the first platform, we can just keep it's left coordinate at its original position 
+		if (i == 0) {
+			prev_right_x = platforms_.at(i).getLeftXCoordinate();
+			prev_d = 0;
+
+		}
+		platforms_.at(i).resize(w, h, prev_right_x, prev_d);
+		prev_right_x = platforms_.at(i).getRightXCoordinate();
+		prev_d = platforms_.at(i).getDistanceToNextPlatform();
+	}
 }
 
 //--------------------------------------------------------------
@@ -193,10 +224,12 @@ void ofApp::updatePlatforms()
 void ofApp::addPlatforms()
 {
 	int last_right_x_coordinate = platforms_.at(platforms_.size() - 1).getRightXCoordinate();
-	while (last_right_x_coordinate < 1024) {
+	int dist_between_platforms = platforms_.at(platforms_.size() - 1).getDistanceToNextPlatform();
+	while (last_right_x_coordinate < ofGetWindowWidth()) {
 
 		Platform next_platform;
-		next_platform.setLeftXCoordinate(last_right_x_coordinate + next_platform.getDistanceFromPrevPlatform());
+		int x = last_right_x_coordinate + dist_between_platforms;
+		next_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), x);
 		platforms_.push_back(next_platform);
 		last_right_x_coordinate = next_platform.getRightXCoordinate();
 	}
@@ -242,16 +275,17 @@ void ofApp::drawStart()
 	}
 }
 
+//TODO: should probably set a max for the height that a volume can produce
+//TODO: clean up logic
+//TODO: figure out how to make platforms move when player is jumping
 void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
 	float screaming = 20;
-	float small_jump_vol = 7;
-	float med_jump_vol = 10;
-	float big_jump_vol = 13;
 	float curVol = 0.0;
 
 	//lets go through each sample and calculate the root mean square which is a rough way to calculate volume	
 	//copied from the openFrameworks audioIn example
+	//TODO: don't think i need to do the splitting into left and right even though they did this in the example (try to see if it works the same if you get rid of it)
 	for (int i = 0; i < bufferSize; i++) {
 		left[i] = input[i * 2] * 0.5;
 		right[i] = input[i * 2 + 1] * 0.5;
@@ -268,27 +302,17 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 	else if (current_state_ == GameState::IN_PROGRESS) {
 		if (!player_.is_jumping_) {
 			if (curVol > 10) {
-				cout << "k" << endl;
 				player_.jump((curVol * 10), ofGetWindowHeight());
 				player_.curr_platform_ = current_platform_;
 			}
-			if (curVol > 2.0) {
-				amount_moved_ += 0.5;
+		}
 
-				/*if (curVol > big_jump_vol) {
-				platform_x_displacements_ = player_.bigJump();
-				}
-				else if (curVol > med_jump_vol) {
-				platform_x_displacements_ = player_.medJump();
-				}
-				else if (curVol > small_jump_vol) {
-				platform_x_displacements_ = player_.smallJump();
-				}*/
-
-			}
-			updatePlatforms();
+		if (curVol > 3.0) {
+			amount_moved_ += 0.5;
 
 		}
+		updatePlatforms();
+
 	}		
 }
 

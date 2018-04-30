@@ -9,12 +9,15 @@
 
 //need something for keeping score
 //keep score by counting platforms
+//TODO: add draw end screen and pause screen
+//TODO: make check google style guide
 
 class ofApp : public ofBaseApp{
 	enum GameState {
 		START_SCREEN, //need drawStartScreen() dog on fire meme, press s to start
 		IN_PROGRESS, 
-		PAUSED, //idk if im gonna implement a paused state
+		PAUSED,		//idk if im gonna implement a paused state
+					//NAH BITCH IMPLEMENT THAT SHIT
 		FINISHED
 	};
 
@@ -25,21 +28,19 @@ class ofApp : public ofBaseApp{
 		bool should_move_platforms_ = true;
 		float amount_moved_;
 
-		vector<float> platform_x_displacements_;
+		//vector<float> platform_x_displacements_;
 
 		Platform current_platform_; //the current platform whose left most x-coordinate is at least the value position as the player's x-coordinate
 									//updates every time the next platform reaches this value 
+									//uh gotta fix how this is found
 
 		const int player_x_coordinate_ = 50;
-		float window_width_;
-		float window_height_;
 
-		const int title_font_modifier_ = 10;
+		const int title_font_modifier_ = 10; //what this for
 		bool title_font_is_loading_ = false;
 		bool title_font_loaded_ = false; //for checking to see if the initial font has been loaded or if it has been loaded after the window has been resized
 		FontLoader title_font_loader_;
 		ofTrueTypeFont title_font_;
-		
 		ofTrueTypeFont title2_font_;
 
 	public:
@@ -50,16 +51,18 @@ class ofApp : public ofBaseApp{
 		void draw();
 
 		void keyPressed(int key);
+		void windowResized(int w, int h);
+
+		//probably won't need these
 		void keyReleased(int key);
-		void mouseMoved(int x, int y );
+		void dragEvent(ofDragInfo dragInfo);
+		void gotMessage(ofMessage msg);
+		void mouseMoved(int x, int y);
 		void mouseDragged(int x, int y, int button);
 		void mousePressed(int x, int y, int button);
 		void mouseReleased(int x, int y, int button);
 		void mouseEntered(int x, int y);
 		void mouseExited(int x, int y);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
 
 		void audioIn(float * input, int bufferSize, int nChannels);
 
@@ -78,19 +81,21 @@ class ofApp : public ofBaseApp{
 		void drawPlatforms();
 		void drawPlayer();
 
+		//does it make sense for these to be public
+		//also does it make sense for dog_ to be here intead of being in the player class
 		ofImage fire_;
 		ofImage dog_;
+		ofSoundStream soundStream;
 
+		//i dont think ill need these anymore
+		//maybe just one vector<float> for the total volume
 		vector <float> left;
 		vector <float> right;
 		vector <float> volHistory;
-
 		int bufferCounter;
 		int drawCounter;
-
 		float smoothedVol;
 		float scaledVol;
 
-		ofSoundStream soundStream;
 		
 };

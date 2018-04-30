@@ -1,7 +1,7 @@
 ﻿  main.cpp
   ofApp.cpp
+  platform.cpp
   player.cpp
-     Creating library bin\THIS IS FINE_debug.lib and object bin\THIS IS FINE_debug.exp
   THIS IS FINE.vcxproj -> C:\Users\Kimi\VisualStudioProjects\final-project-KimiHirano\THIS IS FINE\bin\THIS IS FINE_debug.exe
   THIS IS FINE.vcxproj -> bin\THIS IS FINE_debug.pdb (Full PDB)
   
