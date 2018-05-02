@@ -1,3 +1,3 @@
+ofxBox2d
 ofxGui
-ofxOsc
 ofxXmlSettings

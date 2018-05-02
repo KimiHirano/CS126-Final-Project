@@ -1,7 +1,5 @@
-﻿  main.cpp
-  ofApp.cpp
-  platform.cpp
-  player.cpp
+﻿  ofApp.cpp
+c:\users\kimi\downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxbox2d\libs\triangle\dpoint.hpp(477): warning C4002: too many actual parameters for macro 'assert'
   THIS IS FINE.vcxproj -> C:\Users\Kimi\VisualStudioProjects\final-project-KimiHirano\THIS IS FINE\bin\THIS IS FINE_debug.exe
   THIS IS FINE.vcxproj -> bin\THIS IS FINE_debug.pdb (Full PDB)
   

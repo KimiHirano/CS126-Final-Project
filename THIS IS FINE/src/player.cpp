@@ -6,7 +6,6 @@ void Player::initialize(int window_width, int window_height, int platform_y_coor
 {
 	player_w_ = min(window_width, window_height) * player_proportion_;
 	player_h_ = player_w_;
-	player_body_.setSize(player_w_, player_h_);
 	y_coord_ = platform_y_coord - player_h_;
 }
 
@@ -30,15 +29,15 @@ int Player::getPlayerHeight()
 	return player_h_;
 }
 
-ofColor Player::getColor()
-{
-	return color_;
-}
+//ofColor Player::getColor()
+//{
+//	return color_;
+//}
 
-ofRectangle Player::getBody()
-{
-	return player_body_;
-}
+//ofRectangle Player::getBody()
+//{
+//	return player_body_;
+//}
 
 //void Player::setPlayerPosition(Platform current_platform)
 //{
@@ -54,6 +53,7 @@ void Player::jump(float height, int window_height)
 	is_jumping_ = true;
 	finished_jump_ = false;
 	jump_height_ = y_coord_ - height;
+	jump_increment_ = 20;
 	curr_direction_up_ = true;
 	window_h_ = window_height;
 }

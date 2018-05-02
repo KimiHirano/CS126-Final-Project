@@ -4,7 +4,10 @@
 
 #include "player.h"
 #include "platform.h"
+#include "box2dplayer.h"
+#include "box2dplatform.h"
 #include "fontloader.h"
+#include "ofxBox2d.h"
 #include <utility>
 
 //need something for keeping score
@@ -34,7 +37,7 @@ class ofApp : public ofBaseApp{
 									//updates every time the next platform reaches this value 
 									//uh gotta fix how this is found
 
-		const int player_x_coordinate_ = 50;
+		const int player_x_coordinate_ = 100;
 
 		const int title_font_modifier_ = 10; //what this for
 		bool title_font_is_loading_ = false;
@@ -97,5 +100,15 @@ class ofApp : public ofBaseApp{
 		float smoothedVol;
 		float scaledVol;
 
-		
+		ofxBox2d box2d_;
+		shared_ptr<ofxBox2dRect> box_2d_player_;
+		bool player_moved_forward_ = false;
+		float original_x_;
+		bool player_is_jumping_ = false;
+		bool player_finished_jump_ = false;
+		vector < shared_ptr<Box2DPlatform>> box_2d_platforms_;
+
+		// this is the function for contacts
+		void contactStart(ofxBox2dContactArgs &e);
+		void contactEnd(ofxBox2dContactArgs &e);
 };

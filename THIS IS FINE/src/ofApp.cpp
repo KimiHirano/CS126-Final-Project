@@ -8,11 +8,60 @@
 //TODO: fix line spacing
 //TODO: maybe clean up setup method a lil
 
+//TODO: remove original player and platform stuff
+//separate functions
+
 //--------------------------------------------------------------
 void ofApp::setup(){
 	//ofSetBackgroundColor(255); //white i think
 	
-	srand(static_cast<unsigned>(time(0)));
+	//srand(static_cast<unsigned>(time(0)));
+
+	ofSetVerticalSync(true);
+	ofSetLogLevel(OF_LOG_NOTICE);
+
+
+	box2d_.init();
+	box2d_.enableEvents();   // <-- turn on the event listener
+	box2d_.setGravity(0, 10);
+	box2d_.createGround();
+	box2d_.setFPS(60.0);
+	box2d_.registerGrabbing();
+
+	// register the listener so that we get the events
+	ofAddListener(box2d_.contactStartEvents, this, &ofApp::contactStart);
+	ofAddListener(box2d_.contactEndEvents, this, &ofApp::contactEnd);
+
+	float width_proportion = 0.6;
+	float height_proportion = 0.5;
+	float x = 0;
+	while (x < ofGetWindowWidth()) {
+		//cout << x << endl;
+		float w = ofGetWindowWidth() * width_proportion;
+		float h = ofGetWindowHeight() * height_proportion;
+		float y = ofGetWindowHeight() - (0.5*h);
+		x += w / 2;
+		box_2d_platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
+		box_2d_platforms_.back().get()->setPhysics(300, 0.0, 0.3);
+		box_2d_platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
+		box_2d_platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
+		/*cout << "y"<<box_2d_platforms_.back().get()->getPosition().y << endl;
+		cout << "uh" << (ofGetWindowHeight() - box_2d_platforms_.back().get()->getHeight()) << endl;
+
+		cout << "h" << box_2d_platforms_.back().get()->getHeight() << endl;*/
+
+		width_proportion = ofRandom(0.1,0.4);
+		height_proportion = ofRandom(0.2, 0.4);
+		x = x + (w/2) + box_2d_platforms_.back().get()->getDistanceToNextPlatform();
+		//cout << x << endl;
+	}
+
+	box_2d_player_ = std::make_shared<ofxBox2dRect>();
+	box_2d_player_.get()->setPhysics(1.0, 0, 0.1);
+	float player_length = ofGetWindowWidth() * 0.1;
+	float y = box_2d_platforms_[0].get()->getPosition().y - player_length;
+	box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 100, player_length, player_length);
+	original_x_ = box_2d_player_.get()->getPosition().x;
 
 	Platform first_platform;
 	first_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), 0);
@@ -29,7 +78,7 @@ void ofApp::setup(){
 	fire_.load("fireboi1.jpg");
 	dog_.load("doggo.png");
 
-	ofSetVerticalSync(true);
+	//ofSetVerticalSync(true);
 	ofSetCircleResolution(80);
 	ofBackground(54, 54, 54);
 
@@ -51,8 +100,9 @@ void ofApp::setup(){
 	// 256 samples per buffer
 	// 4 num buffers (latency)
 	soundStream.setup(this, 0, 2, 44100, bufferSize, 4);
-
 }
+
+
 
 //--------------------------------------------------------------
 void ofApp::update(){
@@ -71,32 +121,51 @@ void ofApp::update(){
 		title_font_is_loading_ = false;
 		title_font_loader_.stopThread();
 	}
-
-
-	if (should_update_) {
-		//check if the player is either jumping and above the height of the next/current rectangle
-		//or is currently on the platform
-		//or has landed from a jump - update score
-
-		//or has died
-		//current_state_ = FINISHED;
+	
+	float difference = box_2d_player_.get()->getPosition().x - original_x_;
+	if (player_finished_jump_ && difference != 0) {
+		box_2d_player_.get()->setPosition(original_x_, box_2d_player_.get()->getPosition().y);
+		
+		for (int i = 0; i < box_2d_platforms_.size(); i++) {
+			ofVec2f pos = box_2d_platforms_[i].get()->getPosition();
+			box_2d_platforms_[i].get()->setPosition(pos.x - difference, pos.y);
+		}	
+		difference = 0;
+		original_x_ = box_2d_player_.get()->getPosition().x;
 	}
-	should_update_ = true;
-	player_.updatePosition();
-	/*if (platform_x_displacements_.size() > 0) {
-		updatePlatforms();
-		updatePlayerPosition();
-		draw();
-	}
-	else*/ if(amount_moved_ > 0){
-		updatePlatforms();
-		draw();
-		amount_moved_ = 0;
-	}
+
+	box2d_.update();
+	//if (should_update_) {
+	//	//check if the player is either jumping and above the height of the next/current rectangle
+	//	//or is currently on the platform
+	//	//or has landed from a jump - update score
+
+	//	//or has died
+	//	//current_state_ = FINISHED;
+	//}
+	//should_update_ = true;
+	//player_.updatePosition();
+	///*if (platform_x_displacements_.size() > 0) {
+	//	updatePlatforms();
+	//	updatePlayerPosition();
+	//	draw();
+	//}
+	//else*/ if(amount_moved_ > 0){
+	//	updatePlatforms();
+	//	draw();
+	//	amount_moved_ = 0;
+	//}
+	ofRemove(box_2d_platforms_, ofxBox2dBaseShape::shouldRemoveOffScreen);
+	float x = box_2d_platforms_.back().get()->getPosition().x;
+	if (x < ofGetWindowWidth()) {
+		addPlatforms();
+
+}
+
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
 	ofSetBackgroundColor(255); //white i think
 
 	if (current_state_ == GameState::START_SCREEN) {
@@ -113,20 +182,82 @@ void ofApp::draw(){
 
 		//drawPlayer();
 
-	ofSetColor(255);
-	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
-	
-	ofSetColor(255);
-	dog_.draw(player_.getXCoordinate(), player_.getYCoordinate(), player_.getPlayerWidth(), player_.getPlayerHeight());
+		ofSetColor(255);
+		fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
 
-	for (Platform p : platforms_) {
-		ofSetColor(0);
-		ofDrawRectangle(p.getLeftXCoordinate(), ofGetWindowHeight() - p.getHeight(), p.getWidth(), p.getHeight());
+
+
+		/*for (Platform p : platforms_) {
+			ofSetColor(0);
+			ofDrawRectangle(p.getLeftXCoordinate(), ofGetWindowHeight() - p.getHeight(), p.getWidth(), p.getHeight());
+		}*/
+		for (int i = 0; i < box_2d_platforms_.size(); i++) {
+			ofFill();
+			ofSetColor(0);
+			box_2d_platforms_[i].get()->draw();
+		}
+		box_2d_player_.get()->draw();
+		ofSetColor(255);
+		ofVec2f pos = box_2d_player_.get()->getPosition();
+		float length = box_2d_player_.get()->getWidth();
+		dog_.draw(pos.x - (length/2), pos.y - (length/2), length, length);
 	}
+
+
+
+}
+
+//--------------------------------------------------------------
+void ofApp::contactStart(ofxBox2dContactArgs &e) {
+	if (e.a != NULL && e.b != NULL) {
+		cout << "kk" << endl;
+		if (e.a->GetBody() == box_2d_player_.get()->body || e.b->GetBody() == box_2d_player_.get()->body) {
+			cout << "ii" << endl;
+			player_is_jumping_ = false;
+			player_finished_jump_ = true;
+
+		}
+		// if we collide with the ground we do not
+		// want to play a sound. this is how you do that
+		//if (e.a->GetType() == b2Shape::e_circle && e.b->GetType() == b2Shape::e_circle) {
+
+		//	SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
+		//	SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
+
+		//	if (aData) {
+		//		cout << "a" << endl;
+		//		aData->bHit = true;
+		//		player_finished_jump = true;
+		//		//sound[aData->soundID].play();
+		//	}
+
+		//	if (bData) {
+		//		cout << "b" << endl;
+
+		//		bData->bHit = true;
+		//		player_finished_jump = true;
+
+		//		//sound[bData->soundID].play();
+		//	}
+		//}
 	}
+}
 
-	
+//--------------------------------------------------------------
+void ofApp::contactEnd(ofxBox2dContactArgs &e) {
+	if (e.a != NULL && e.b != NULL) {
 
+		/*SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
+		SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
+
+		if (aData) {
+			aData->bHit = false;
+		}
+
+		if (bData) {
+			bData->bHit = false;
+		}*/
+	}
 }
 
 //--------------------------------------------------------------
@@ -223,7 +354,7 @@ void ofApp::updatePlatforms()
 
 void ofApp::addPlatforms()
 {
-	int last_right_x_coordinate = platforms_.at(platforms_.size() - 1).getRightXCoordinate();
+	/*int last_right_x_coordinate = platforms_.at(platforms_.size() - 1).getRightXCoordinate();
 	int dist_between_platforms = platforms_.at(platforms_.size() - 1).getDistanceToNextPlatform();
 	while (last_right_x_coordinate < ofGetWindowWidth()) {
 
@@ -232,6 +363,31 @@ void ofApp::addPlatforms()
 		next_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), x);
 		platforms_.push_back(next_platform);
 		last_right_x_coordinate = next_platform.getRightXCoordinate();
+	}*/
+	float x = box_2d_platforms_.back().get()->getPosition().x + 
+		box_2d_platforms_.back().get()->getWidth() + 
+		box_2d_platforms_.back().get()->getDistanceToNextPlatform();
+	float width_proportion = ofRandom(0.1, 0.4);
+	float height_proportion = ofRandom(0.2, 0.4);
+	while (x < ofGetWindowWidth()) {
+		//cout << x << endl;
+		float w = ofGetWindowWidth() * width_proportion;
+		float h = ofGetWindowHeight() * height_proportion;
+		float y = ofGetWindowHeight() - (0.5*h);
+		x += w / 2;
+		box_2d_platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
+		box_2d_platforms_.back().get()->setPhysics(300, 0.0, 0.3);
+		box_2d_platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
+		box_2d_platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
+		/*cout << "y"<<box_2d_platforms_.back().get()->getPosition().y << endl;
+		cout << "uh" << (ofGetWindowHeight() - box_2d_platforms_.back().get()->getHeight()) << endl;
+
+		cout << "h" << box_2d_platforms_.back().get()->getHeight() << endl;*/
+
+		width_proportion = ofRandom(0.1, 0.4);
+		height_proportion = ofRandom(0.2, 0.4);
+		x = x + (w / 2) + box_2d_platforms_.back().get()->getDistanceToNextPlatform();
+		//cout << x << endl;
 	}
 }
 
@@ -280,7 +436,7 @@ void ofApp::drawStart()
 //TODO: figure out how to make platforms move when player is jumping
 void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
-	float screaming = 20;
+	float screaming = 30;
 	float curVol = 0.0;
 
 	//lets go through each sample and calculate the root mean square which is a rough way to calculate volume	
@@ -300,18 +456,30 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 		}
 	}
 	else if (current_state_ == GameState::IN_PROGRESS) {
-		if (!player_.is_jumping_) {
+		//if (!player_is_jumping_) {
+			if (curVol > 10) {
+				cout << curVol << endl;
+				ofVec2f amt(0.0, 10.0);
+				box_2d_player_.get()->addImpulseForce(box_2d_player_.get()->getPosition(), amt);
+				player_is_jumping_ = true;
+				player_finished_jump_ = false;
+				
+			}
+		//}
+		
+
+		/*if (!player_.is_jumping_) {
 			if (curVol > 10) {
 				player_.jump((curVol * 10), ofGetWindowHeight());
 				player_.curr_platform_ = current_platform_;
 			}
 		}
 
-		if (curVol > 3.0) {
+		if (curVol > 5.0) {
 			amount_moved_ += 0.5;
 
 		}
-		updatePlatforms();
+		updatePlatforms();*/
 
 	}		
 }

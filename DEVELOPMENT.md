@@ -27,3 +27,14 @@
 		* top left corner is (0,0)!!!
 	* the platforms not moving during the player's jump
 	* need a way to figure out whether the player made it onto a platform or fell between the platforms
+	* probably going to use ofxBox2D to help with jumping motion
+* compiling errors when trying to use ofxBox2D for the character's movements
+	* need to use stable branch
+	* error in the stable branch: in ofxBox2DPolygonUtils.h, line 115, change `<int mk[n];>` to `<int* mk = new int[n];>`
+* using to help with the movements for the player
+	* using an ofxBox2dRect to represent the player so (at least not that I know of) I can't directly use it with ofImage so the player will just be a box instead of the dog
+	* when drawing the player, instead of drawing the actual ofxBox2dRect I can just draw the ofImage at the same coordinates as the ofxBox2dRect using getPosition()
+	* had to refactor player class so that it extends ofxBox2dRect
+	* had to do some physics magic to make sure when the player jumps it stays at the same x-position
+	* nvm it wasn't that complicated actually
+* removed `<ofSetFrameRate(12);>` from main.cpp because it was too slow

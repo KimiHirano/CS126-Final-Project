@@ -18,8 +18,8 @@ private:
 	int x_coord_ = 50; //x coordinate of the upper left hand corner
 	int y_coord_; //y coordinate of the upper  left hand corner
 
-	ofRectangle player_body_;
-	ofColor color_ = ofColor::aquamarine;
+	//ofRectangle player_body_;
+	//ofColor color_ = ofColor::aquamarine;
 
 	const float jump_height_proportion_ = 1;	//TODO: play with different numbers for this value
 	const float jump_increment_proportion = 1;	//TODO: play with different numbers for this value
@@ -44,8 +44,8 @@ public:
 	int getYCoordinate();
 	int getPlayerWidth();
 	int getPlayerHeight();
-	ofColor Player::getColor();
-	ofRectangle Player::getBody();
+	//ofColor Player::getColor();
+	//ofRectangle Player::getBody();
 
 	//setters
 	//void setPlayerPosition(Platform current_platform);	//to set the player's initial position at the start of the game so that it starts at the right height
@@ -58,3 +58,4 @@ public:
 	void resize(float window_height, float window_width); //resizes width/height/y-coordinate/(maybe x_coordinate but not as important) based on the new window dimensions
 
 };
+
