@@ -92,6 +92,7 @@ class ofApp : public ofBaseApp{
 
 		//i dont think ill need these anymore
 		//maybe just one vector<float> for the total volume
+		vector<float> in;
 		vector <float> left;
 		vector <float> right;
 		vector <float> volHistory;

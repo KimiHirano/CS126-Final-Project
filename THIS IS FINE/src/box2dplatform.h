@@ -45,5 +45,5 @@ public:
 	//bool canShiftLeft(int shift_amount); //returns true if this platform can be shifted and still remain visible in the window
 	//void shiftLeft(int shift_amount);
 	//void resize(float window_w, float window_h, int prev_right_x, int prev_d);
-
+	static bool shouldRemoveOffScreen(shared_ptr<Box2DPlatform> shape);
 };

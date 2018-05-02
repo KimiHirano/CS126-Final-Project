@@ -38,3 +38,9 @@
 	* had to do some physics magic to make sure when the player jumps it stays at the same x-position
 	* nvm it wasn't that complicated actually
 * removed `<ofSetFrameRate(12);>` from main.cpp because it was too slow
+* ofRemove would remove platforms before they were completely out of the screen
+	* had to override shouldRemoveOffScreen
+* platforms would get knocked over instead of being fixed to the ground
+	* when initializing the platforms with setPhysics, set density to 0 and/or set the type to static:
+		* `<box_2d_platforms_.back().get()->body->SetType(b2_staticBody);>`
+* playing around with different values for best result right now

@@ -20,7 +20,6 @@ void ofApp::setup(){
 	ofSetVerticalSync(true);
 	ofSetLogLevel(OF_LOG_NOTICE);
 
-
 	box2d_.init();
 	box2d_.enableEvents();   // <-- turn on the event listener
 	box2d_.setGravity(0, 10);
@@ -32,48 +31,44 @@ void ofApp::setup(){
 	ofAddListener(box2d_.contactStartEvents, this, &ofApp::contactStart);
 	ofAddListener(box2d_.contactEndEvents, this, &ofApp::contactEnd);
 
+	//TODO: use addPlatforms() instead
 	float width_proportion = 0.6;
 	float height_proportion = 0.5;
 	float x = 0;
 	while (x < ofGetWindowWidth()) {
-		//cout << x << endl;
 		float w = ofGetWindowWidth() * width_proportion;
 		float h = ofGetWindowHeight() * height_proportion;
 		float y = ofGetWindowHeight() - (0.5*h);
 		x += w / 2;
 		box_2d_platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
-		box_2d_platforms_.back().get()->setPhysics(300, 0.0, 0.3);
+		box_2d_platforms_.back().get()->setPhysics(0, 0.5, 0.5);
 		box_2d_platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
 		box_2d_platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
-		/*cout << "y"<<box_2d_platforms_.back().get()->getPosition().y << endl;
-		cout << "uh" << (ofGetWindowHeight() - box_2d_platforms_.back().get()->getHeight()) << endl;
-
-		cout << "h" << box_2d_platforms_.back().get()->getHeight() << endl;*/
+		box_2d_platforms_.back().get()->body->SetType(b2_staticBody); // (when anchors is a vector of smart pointers to static box2d objects )
 
 		width_proportion = ofRandom(0.1,0.4);
 		height_proportion = ofRandom(0.2, 0.4);
 		x = x + (w/2) + box_2d_platforms_.back().get()->getDistanceToNextPlatform();
-		//cout << x << endl;
 	}
 
+	//addPlayer()?
 	box_2d_player_ = std::make_shared<ofxBox2dRect>();
-	box_2d_player_.get()->setPhysics(1.0, 0, 0.1);
+	box_2d_player_.get()->setPhysics(3.0, 0.53, 0.1);
 	float player_length = ofGetWindowWidth() * 0.1;
 	float y = box_2d_platforms_[0].get()->getPosition().y - player_length;
 	box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 100, player_length, player_length);
 	original_x_ = box_2d_player_.get()->getPosition().x;
 
-	Platform first_platform;
-	first_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), 0);
-	first_platform.setWidthProportion(0.6, ofGetWindowWidth());
+	//Platform first_platform;
+	//first_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), 0);
+	//first_platform.setWidthProportion(0.6, ofGetWindowWidth());
 
-	current_platform_ = first_platform;
-	platforms_.push_back(first_platform);
+	//current_platform_ = first_platform;
+	//platforms_.push_back(first_platform);
 
 	addPlatforms();
 
-	player_.initialize(ofGetWindowWidth(), ofGetWindowHeight(), first_platform.getY());
-	//soundStream.printDeviceList();
+	//player_.initialize(ofGetWindowWidth(), ofGetWindowHeight(), first_platform.getY());
 
 	fire_.load("fireboi1.jpg");
 	dog_.load("doggo.png");
@@ -83,7 +78,6 @@ void ofApp::setup(){
 	ofBackground(54, 54, 54);
 
 	int bufferSize = 256;
-
 
 	left.assign(bufferSize, 0.0);
 	right.assign(bufferSize, 0.0);
@@ -155,7 +149,9 @@ void ofApp::update(){
 	//	draw();
 	//	amount_moved_ = 0;
 	//}
-	ofRemove(box_2d_platforms_, ofxBox2dBaseShape::shouldRemoveOffScreen);
+
+	//TODO: make sure it only removes platforms that are completely off the screen
+	ofRemove(box_2d_platforms_, Box2DPlatform::shouldRemoveOffScreen);
 	float x = box_2d_platforms_.back().get()->getPosition().x;
 	if (x < ofGetWindowWidth()) {
 		addPlatforms();
@@ -172,7 +168,7 @@ void ofApp::draw() {
 		drawStart();
 	}
 	else if (current_state_ == GameState::FINISHED) {
-		//drawEnd();
+		drawEnd();
 	}
 	else if (current_state_ == GameState::PAUSED) {
 		//drawGamePaused
@@ -196,7 +192,7 @@ void ofApp::draw() {
 			ofSetColor(0);
 			box_2d_platforms_[i].get()->draw();
 		}
-		box_2d_player_.get()->draw();
+		//box_2d_player_.get()->draw();
 		ofSetColor(255);
 		ofVec2f pos = box_2d_player_.get()->getPosition();
 		float length = box_2d_player_.get()->getWidth();
@@ -215,49 +211,23 @@ void ofApp::contactStart(ofxBox2dContactArgs &e) {
 			cout << "ii" << endl;
 			player_is_jumping_ = false;
 			player_finished_jump_ = true;
+			
+
+			if (current_state_ == GameState::IN_PROGRESS) {
+				//end game when player collides with the ground
+				if ((e.a->GetType() != b2Shape::e_polygon || e.b->GetType() != b2Shape::e_polygon)) {
+					current_state_ = GameState::FINISHED;
+				}
+			}
+			
 
 		}
-		// if we collide with the ground we do not
-		// want to play a sound. this is how you do that
-		//if (e.a->GetType() == b2Shape::e_circle && e.b->GetType() == b2Shape::e_circle) {
-
-		//	SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
-		//	SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
-
-		//	if (aData) {
-		//		cout << "a" << endl;
-		//		aData->bHit = true;
-		//		player_finished_jump = true;
-		//		//sound[aData->soundID].play();
-		//	}
-
-		//	if (bData) {
-		//		cout << "b" << endl;
-
-		//		bData->bHit = true;
-		//		player_finished_jump = true;
-
-		//		//sound[bData->soundID].play();
-		//	}
-		//}
 	}
 }
 
 //--------------------------------------------------------------
 void ofApp::contactEnd(ofxBox2dContactArgs &e) {
-	if (e.a != NULL && e.b != NULL) {
-
-		/*SoundData * aData = (SoundData*)e.a->GetBody()->GetUserData();
-		SoundData * bData = (SoundData*)e.b->GetBody()->GetUserData();
-
-		if (aData) {
-			aData->bHit = false;
-		}
-
-		if (bData) {
-			bData->bHit = false;
-		}*/
-	}
+	//if (e.a != NULL && e.b != NULL) {}
 }
 
 //--------------------------------------------------------------
@@ -431,6 +401,29 @@ void ofApp::drawStart()
 	}
 }
 
+void ofApp::drawEnd()
+{
+	ofSetColor(255);
+	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
+
+	float dog_width = ofGetWindowWidth() * 0.15;
+	float dog_height = dog_width;
+	float dog_x = (ofGetWindowWidth() / 2) - (dog_width / 2);
+	float dog_y = ofGetWindowHeight() - dog_height;
+	ofSetColor(255);
+	dog_.draw(dog_x, dog_y, dog_width, dog_height);
+
+
+	if (title_font_loaded_) {
+		ofSetColor(ofColor::black);
+		string title = "THIS IS FIN";
+		ofRectangle title_box = title_font_.getStringBoundingBox(title, 0, title_font_.getLineHeight());
+		int xpos = (ofGetWindowWidth() / 2) - (title_box.getWidth() / 2);
+		title_font_.drawStringAsShapes(title, xpos, title_font_.getLineHeight());
+
+	}
+}
+
 //TODO: should probably set a max for the height that a volume can produce
 //TODO: clean up logic
 //TODO: figure out how to make platforms move when player is jumping
@@ -459,7 +452,7 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 		//if (!player_is_jumping_) {
 			if (curVol > 10) {
 				cout << curVol << endl;
-				ofVec2f amt(0.0, 10.0);
+				ofVec2f amt(0.0, curVol);
 				box_2d_player_.get()->addImpulseForce(box_2d_player_.get()->getPosition(), amt);
 				player_is_jumping_ = true;
 				player_finished_jump_ = false;
