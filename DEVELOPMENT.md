@@ -44,3 +44,5 @@
 	* when initializing the platforms with setPhysics, set density to 0 and/or set the type to static:
 		* `<box_2d_platforms_.back().get()->body->SetType(b2_staticBody);>`
 * playing around with different values for best result right now
+* when adding score_ to the string that displays the final score at the end screen, have to do `<std::to_string(score_)>`
+* scores not updating properly

@@ -27,15 +27,8 @@ class ofApp : public ofBaseApp{
     private:
 		GameState current_state_ = START_SCREEN;
 		Player player_;
-		std::vector<Platform> platforms_;
 		bool should_move_platforms_ = true;
 		float amount_moved_;
-
-		//vector<float> platform_x_displacements_;
-
-		Platform current_platform_; //the current platform whose left most x-coordinate is at least the value position as the player's x-coordinate
-									//updates every time the next platform reaches this value 
-									//uh gotta fix how this is found
 
 		const int player_x_coordinate_ = 100;
 
@@ -45,6 +38,8 @@ class ofApp : public ofBaseApp{
 		FontLoader title_font_loader_;
 		ofTrueTypeFont title_font_;
 		ofTrueTypeFont title2_font_;
+
+		int score_ = 0;
 
 	public:
 		bool should_update_ = true;
@@ -56,22 +51,9 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
 		void windowResized(int w, int h);
 
-		//probably won't need these
-		void keyReleased(int key);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
-		void mouseMoved(int x, int y);
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void mouseEntered(int x, int y);
-		void mouseExited(int x, int y);
-
 		void audioIn(float * input, int bufferSize, int nChannels);
 
-		void updatePlayerPosition();
-
-		void updatePlatforms();			//changes all the x-coordinates of the platforms
+		//void updatePlatforms();			//changes all the x-coordinates of the platforms
 										//removes platforms whose x-cordinates have gone out of bounds
 										//adds enough platforms to fill the window
 										//updates current platform if necessary
@@ -84,6 +66,13 @@ class ofApp : public ofBaseApp{
 		void drawPlatforms();
 		void drawPlayer();
 
+		void drawTitle(ofTrueTypeFont font, string words, 
+			float line_height, float letter_spacing, int string_num);
+
+		void drawFire();
+		void drawDog(float y_surface); //y_surface is the y-coordinate of the surface on which the dog is supposed to be drawn
+
+
 		//does it make sense for these to be public
 		//also does it make sense for dog_ to be here intead of being in the player class
 		ofImage fire_;
@@ -95,11 +84,6 @@ class ofApp : public ofBaseApp{
 		vector<float> in;
 		vector <float> left;
 		vector <float> right;
-		vector <float> volHistory;
-		int bufferCounter;
-		int drawCounter;
-		float smoothedVol;
-		float scaledVol;
 
 		ofxBox2d box2d_;
 		shared_ptr<ofxBox2dRect> box_2d_player_;
@@ -107,7 +91,11 @@ class ofApp : public ofBaseApp{
 		float original_x_;
 		bool player_is_jumping_ = false;
 		bool player_finished_jump_ = false;
-		vector < shared_ptr<Box2DPlatform>> box_2d_platforms_;
+		vector < shared_ptr<Box2DPlatform>> platforms_;
+		ofxBox2dEdge edge_line_;
+		Box2DPlatform* current_platform_;
+		void addPlatform(float x, float y, float w, float h);
+		float standing_y_;
 
 		// this is the function for contacts
 		void contactStart(ofxBox2dContactArgs &e);

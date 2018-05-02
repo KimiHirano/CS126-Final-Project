@@ -3,6 +3,8 @@
 #include "ofxBox2d.h"
 
 class Box2DPlayer : public ofxBox2dRect {
+private:
+	ofImage image_;
 //private:
 //	static const float player_proportion_;
 //
@@ -20,4 +22,7 @@ class Box2DPlayer : public ofxBox2dRect {
 //	bool finished_jump_ = false;
 //
 //	int window_h_;
+public:
+	void initialize(ofImage image);
+	void draw();
 };

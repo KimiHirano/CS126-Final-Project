@@ -12,14 +12,15 @@
 //separate functions
 
 //--------------------------------------------------------------
-void ofApp::setup(){
-	//ofSetBackgroundColor(255); //white i think
-	
-	//srand(static_cast<unsigned>(time(0)));
-
+void ofApp::setup() {
+	//ofSetBackgroundColor(255);
 	ofSetVerticalSync(true);
 	ofSetLogLevel(OF_LOG_NOTICE);
 
+	fire_.load("fireboi1.jpg");
+	dog_.load("doggo.png");
+
+	//initialize box2d world
 	box2d_.init();
 	box2d_.enableEvents();   // <-- turn on the event listener
 	box2d_.setGravity(0, 10);
@@ -31,62 +32,33 @@ void ofApp::setup(){
 	ofAddListener(box2d_.contactStartEvents, this, &ofApp::contactStart);
 	ofAddListener(box2d_.contactEndEvents, this, &ofApp::contactEnd);
 
-	//TODO: use addPlatforms() instead
-	float width_proportion = 0.6;
-	float height_proportion = 0.5;
-	float x = 0;
-	while (x < ofGetWindowWidth()) {
-		float w = ofGetWindowWidth() * width_proportion;
-		float h = ofGetWindowHeight() * height_proportion;
-		float y = ofGetWindowHeight() - (0.5*h);
-		x += w / 2;
-		box_2d_platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
-		box_2d_platforms_.back().get()->setPhysics(0, 0.5, 0.5);
-		box_2d_platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
-		box_2d_platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
-		box_2d_platforms_.back().get()->body->SetType(b2_staticBody); // (when anchors is a vector of smart pointers to static box2d objects )
+	//make starting platform
+	float w = ofGetWindowWidth() * 0.6;
+	float h = ofGetWindowHeight() * 0.5;
+	float x = w / 2;
+	float y = ofGetWindowHeight() - (0.5*h);
+	addPlatform(x, y, w, h);
 
-		width_proportion = ofRandom(0.1,0.4);
-		height_proportion = ofRandom(0.2, 0.4);
-		x = x + (w/2) + box_2d_platforms_.back().get()->getDistanceToNextPlatform();
+	//set first platform to current platform
+	current_platform_ = platforms_.back().get();
+
+	//add enough platforms to fill the window
+	while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
+		addPlatforms();
 	}
 
 	//addPlayer()?
 	box_2d_player_ = std::make_shared<ofxBox2dRect>();
-	box_2d_player_.get()->setPhysics(3.0, 0.53, 0.1);
+	box_2d_player_.get()->setPhysics(1.0, 0.0, 0.1);
 	float player_length = ofGetWindowWidth() * 0.1;
-	float y = box_2d_platforms_[0].get()->getPosition().y - player_length;
+	float player_y = platforms_[0].get()->getPosition().y - player_length;
 	box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 100, player_length, player_length);
 	original_x_ = box_2d_player_.get()->getPosition().x;
-
-	//Platform first_platform;
-	//first_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), 0);
-	//first_platform.setWidthProportion(0.6, ofGetWindowWidth());
-
-	//current_platform_ = first_platform;
-	//platforms_.push_back(first_platform);
-
-	addPlatforms();
-
-	//player_.initialize(ofGetWindowWidth(), ofGetWindowHeight(), first_platform.getY());
-
-	fire_.load("fireboi1.jpg");
-	dog_.load("doggo.png");
-
-	//ofSetVerticalSync(true);
-	ofSetCircleResolution(80);
-	ofBackground(54, 54, 54);
 
 	int bufferSize = 256;
 
 	left.assign(bufferSize, 0.0);
 	right.assign(bufferSize, 0.0);
-	volHistory.assign(400, 0.0);
-
-	bufferCounter = 0;
-	drawCounter = 0;
-	smoothedVol = 0.0;
-	scaledVol = 0.0;
 
 	// 0 output channels, 
 	// 2 input channels
@@ -99,71 +71,51 @@ void ofApp::setup(){
 
 
 //--------------------------------------------------------------
-void ofApp::update(){
-	//does it make more sense to put this in the window resized method?
+void ofApp::update() {
 	if (!title_font_is_loading_ && !title_font_loaded_) {
 		int min_dimension = min(ofGetWindowHeight(), ofGetWindowWidth());
 		int title_font_size = min_dimension / title_font_modifier_;
-		title_font_loader_.setup("Gaegu-Bold.ttf", title_font_size); //font downloaded from https://fonts.google.com/specimen/Gaegu?selection.family=Gaegu
+
+		//font downloaded from:
+		//https://fonts.google.com/specimen/Gaegu?selection.family=Gaegu
+		title_font_loader_.setup("Gaegu-Bold.ttf", title_font_size);
 
 		title_font_is_loading_ = true;
 		title_font_loader_.startThread();
-	}
-	else if(title_font_is_loading_ && !title_font_loader_.isThreadRunning()) { //check to see if the title font loading thread has finished loading
+
+		//check to see if the title font loading thread has finished loading
+	} else if (title_font_is_loading_ && !title_font_loader_.isThreadRunning()) { 
 		title_font_ = title_font_loader_.font_;
 		title_font_loaded_ = true;
 		title_font_is_loading_ = false;
 		title_font_loader_.stopThread();
 	}
-	
+
 	float difference = box_2d_player_.get()->getPosition().x - original_x_;
 	if (player_finished_jump_ && difference != 0) {
 		box_2d_player_.get()->setPosition(original_x_, box_2d_player_.get()->getPosition().y);
-		
-		for (int i = 0; i < box_2d_platforms_.size(); i++) {
-			ofVec2f pos = box_2d_platforms_[i].get()->getPosition();
-			box_2d_platforms_[i].get()->setPosition(pos.x - difference, pos.y);
-		}	
+
+		for (int i = 0; i < platforms_.size(); i++) {
+			ofVec2f pos = platforms_[i].get()->getPosition();
+			platforms_[i].get()->setPosition(pos.x - difference, pos.y);
+		}
 		difference = 0;
 		original_x_ = box_2d_player_.get()->getPosition().x;
 	}
 
+	
 	box2d_.update();
-	//if (should_update_) {
-	//	//check if the player is either jumping and above the height of the next/current rectangle
-	//	//or is currently on the platform
-	//	//or has landed from a jump - update score
 
-	//	//or has died
-	//	//current_state_ = FINISHED;
-	//}
-	//should_update_ = true;
-	//player_.updatePosition();
-	///*if (platform_x_displacements_.size() > 0) {
-	//	updatePlatforms();
-	//	updatePlayerPosition();
-	//	draw();
-	//}
-	//else*/ if(amount_moved_ > 0){
-	//	updatePlatforms();
-	//	draw();
-	//	amount_moved_ = 0;
-	//}
-
-	//TODO: make sure it only removes platforms that are completely off the screen
-	ofRemove(box_2d_platforms_, Box2DPlatform::shouldRemoveOffScreen);
-	float x = box_2d_platforms_.back().get()->getPosition().x;
-	if (x < ofGetWindowWidth()) {
+	ofRemove(platforms_, Box2DPlatform::shouldRemoveOffScreen);
+	while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
 		addPlatforms();
-
-}
-
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
 	ofSetBackgroundColor(255); //white i think
-
+	drawFire();
 	if (current_state_ == GameState::START_SCREEN) {
 		drawStart();
 	}
@@ -174,55 +126,50 @@ void ofApp::draw() {
 		//drawGamePaused
 	}
 	else {
-		//drawPlatforms();
-
-		//drawPlayer();
-
-		ofSetColor(255);
-		fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
-
-
-
-		/*for (Platform p : platforms_) {
-			ofSetColor(0);
-			ofDrawRectangle(p.getLeftXCoordinate(), ofGetWindowHeight() - p.getHeight(), p.getWidth(), p.getHeight());
-		}*/
-		for (int i = 0; i < box_2d_platforms_.size(); i++) {
+		//draw platforms
+		for (int i = 0; i < platforms_.size(); i++) {
 			ofFill();
 			ofSetColor(0);
-			box_2d_platforms_[i].get()->draw();
+			platforms_[i].get()->draw();
 		}
-		//box_2d_player_.get()->draw();
+
+		//draw player
 		ofSetColor(255);
 		ofVec2f pos = box_2d_player_.get()->getPosition();
 		float length = box_2d_player_.get()->getWidth();
-		dog_.draw(pos.x - (length/2), pos.y - (length/2), length, length);
+		dog_.draw(pos.x - (length / 2), pos.y - (length / 2), length, length);
 	}
-
-
-
 }
 
 //--------------------------------------------------------------
 void ofApp::contactStart(ofxBox2dContactArgs &e) {
-	if (e.a != NULL && e.b != NULL) {
-		cout << "kk" << endl;
-		if (e.a->GetBody() == box_2d_player_.get()->body || e.b->GetBody() == box_2d_player_.get()->body) {
-			cout << "ii" << endl;
-			player_is_jumping_ = false;
-			player_finished_jump_ = true;
-			
+	if (current_state_ == GameState::IN_PROGRESS) {
+		if (e.a != NULL && e.b != NULL) {
 
-			if (current_state_ == GameState::IN_PROGRESS) {
-				//end game when player collides with the ground
-				if ((e.a->GetType() != b2Shape::e_polygon || e.b->GetType() != b2Shape::e_polygon)) {
-					current_state_ = GameState::FINISHED;
+			//end game when player collides with the ground
+			if ((e.a->GetType() != b2Shape::e_polygon ||
+				e.b->GetType() != b2Shape::e_polygon)) {
+				current_state_ = GameState::FINISHED;
+
+			//updates current platform when player lands on new platform
+			} else if (e.a->GetBody() == box_2d_player_.get()->body) {
+				if (e.b->GetBody() != current_platform_->body) {
+					current_platform_ = (Box2DPlatform*)e.b;
+					score_++;
+					cout << "score: " <<score_ << endl;
+
+				}
+			} else if (e.b->GetBody() == box_2d_player_.get()->body) {
+				if (e.a->GetBody() != current_platform_->body) {
+					current_platform_ = (Box2DPlatform*)e.a;
+					score_++;
+					cout << "score: " << score_ << endl;
 				}
 			}
-			
 
+			player_finished_jump_ = true;
 		}
-	}
+	}	
 }
 
 //--------------------------------------------------------------
@@ -231,140 +178,42 @@ void ofApp::contactEnd(ofxBox2dContactArgs &e) {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
+void ofApp::keyPressed(int key) {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-	
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
+void ofApp::windowResized(int w, int h) {
 	title_font_loaded_ = false;
-	player_.resize(w, h);
-
-	int prev_right_x;	//the right most coordinate of the previous platform
-	int prev_d;		//the distance between the previous platform and the current platform
-	for (int i = 0; i < platforms_.size(); i++) {
-
-		//prev_right_x and prev_d are added to get the value of the current platform's left x-coordinate
-		//so for the first platform, we can just keep it's left coordinate at its original position 
-		if (i == 0) {
-			prev_right_x = platforms_.at(i).getLeftXCoordinate();
-			prev_d = 0;
-
-		}
-		platforms_.at(i).resize(w, h, prev_right_x, prev_d);
-		prev_right_x = platforms_.at(i).getRightXCoordinate();
-		prev_d = platforms_.at(i).getDistanceToNextPlatform();
-	}
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
+	//player_.resize(w, h);
 
 }
 
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-
-}
-
-void ofApp::updatePlatforms()
-{/*
-	if (platform_x_displacements_.size() > 0) {
-		for (int i = 0; i < platforms_.size(); i++) {
-			platforms_.at(i).shiftLeft(platform_x_displacements_.at(0));
-		}
-		addPlatforms();
-		platform_x_displacements_.erase(platform_x_displacements_.begin());
-	}
-	else*/ if (amount_moved_ > 0){
-		for (int i = 0; i < platforms_.size(); i++) {
-			platforms_.at(i).shiftLeft(amount_moved_);
-			if (platforms_.at(i).getLeftXCoordinate() < player_x_coordinate_ &&
-				platforms_.at(i).getLeftXCoordinate() + platforms_.at(i).getWidth() > player_x_coordinate_) {
-				current_platform_ = platforms_.at(i);
-			}
-		}
-		addPlatforms();
-	}
+void ofApp::addPlatform(float x, float y, float w, float h)
+{
+	platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
+	platforms_.back().get()->setPhysics(0, 0.5, 0.5);
+	platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
+	platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
+	platforms_.back().get()->body->SetType(b2_staticBody);
 }
 
 void ofApp::addPlatforms()
 {
-	/*int last_right_x_coordinate = platforms_.at(platforms_.size() - 1).getRightXCoordinate();
-	int dist_between_platforms = platforms_.at(platforms_.size() - 1).getDistanceToNextPlatform();
-	while (last_right_x_coordinate < ofGetWindowWidth()) {
-
-		Platform next_platform;
-		int x = last_right_x_coordinate + dist_between_platforms;
-		next_platform.initialize(ofGetWindowWidth(), ofGetWindowHeight(), x);
-		platforms_.push_back(next_platform);
-		last_right_x_coordinate = next_platform.getRightXCoordinate();
-	}*/
-	float x = box_2d_platforms_.back().get()->getPosition().x + 
-		box_2d_platforms_.back().get()->getWidth() + 
-		box_2d_platforms_.back().get()->getDistanceToNextPlatform();
 	float width_proportion = ofRandom(0.1, 0.4);
 	float height_proportion = ofRandom(0.2, 0.4);
-	while (x < ofGetWindowWidth()) {
-		//cout << x << endl;
-		float w = ofGetWindowWidth() * width_proportion;
-		float h = ofGetWindowHeight() * height_proportion;
-		float y = ofGetWindowHeight() - (0.5*h);
-		x += w / 2;
-		box_2d_platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
-		box_2d_platforms_.back().get()->setPhysics(300, 0.0, 0.3);
-		box_2d_platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
-		box_2d_platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
-		/*cout << "y"<<box_2d_platforms_.back().get()->getPosition().y << endl;
-		cout << "uh" << (ofGetWindowHeight() - box_2d_platforms_.back().get()->getHeight()) << endl;
 
-		cout << "h" << box_2d_platforms_.back().get()->getHeight() << endl;*/
-
-		width_proportion = ofRandom(0.1, 0.4);
-		height_proportion = ofRandom(0.2, 0.4);
-		x = x + (w / 2) + box_2d_platforms_.back().get()->getDistanceToNextPlatform();
-		//cout << x << endl;
-	}
+	float w = ofGetWindowWidth() * width_proportion;
+	float h = ofGetWindowHeight() * height_proportion;
+	float y = ofGetWindowHeight() - (0.5*h);
+	float x = platforms_.back().get()->getPosition().x +
+		platforms_.back().get()->getWidth() +
+		platforms_.back().get()->getDistanceToNextPlatform() /*+ w / 2*/;
+	addPlatform(x, y, w, h);
 }
 
 void ofApp::drawStart()
 {
-	ofSetColor(255);
-	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight()/2);
+	drawFire();
 
 	ofRectangle platform;
 	float platform_height = ofGetWindowHeight() * 0.4;
@@ -376,52 +225,60 @@ void ofApp::drawStart()
 	ofSetColor(ofColor::black);
 	ofDrawRectangle(platform);
 
-	float dog_width = ofGetWindowWidth() * 0.15;
-	float dog_height = dog_width;
-	float dog_x = (ofGetWindowWidth() / 2) - (dog_width / 2);
-	float dog_y = platform_y - dog_height;
-	ofSetColor(255);
-	dog_.draw(dog_x, dog_y, dog_width, dog_height);
+	drawDog(platform_y);
 
 	if (title_font_loaded_) {
-		ofSetColor(ofColor::black);
-		string title = "THIS IS FINE.";
-		ofRectangle title_box = title_font_.getStringBoundingBox(title, 0, title_font_.getLineHeight());
-		int xpos = (ofGetWindowWidth() / 2) - (title_box.getWidth() / 2);
-		title_font_.drawStringAsShapes(title, xpos, title_font_.getLineHeight());
+		string title1 = "THIS IS FINE.";
+		drawTitle(title_font_, title1, 1, 1, 1);
 
 		string title2 = "a voice controlled game\n   (scream to start)";
-		title2_font_ = title_font_;
-		title2_font_.setLetterSpacing(0.7);
-		title2_font_.setLineHeight(title_font_.getLineHeight() / 2);
-		ofRectangle title2_box = title2_font_.getStringBoundingBox(title2, 0, title2_font_.getLineHeight());
-		int xpos2 = (ofGetWindowWidth() / 2) - (title2_box.getWidth() / 2);
-		int ypos2 = title_font_.getLineHeight() * 2;
-		title2_font_.drawStringAsShapes(title2, xpos2, ypos2);		
+		drawTitle(title_font_, title2, 0.5, 0.7, 2);
 	}
 }
 
 void ofApp::drawEnd()
 {
-	ofSetColor(255);
-	fire_.draw(0, ofGetWindowHeight() / 2, ofGetWindowWidth(), ofGetWindowHeight() / 2);
+	drawFire();
+	drawDog(ofGetWindowHeight());
 
+	if (title_font_loaded_) {
+		string title = "THIS IS FIN";
+		drawTitle(title_font_, title, 1, 1, 1);
+
+		string score_title = "final score: " + std::to_string(score_);
+		drawTitle(title_font_, score_title, 0.5, 0.7, 2);
+	}
+}
+
+void ofApp::drawTitle(ofTrueTypeFont font, string words, 
+	float line_height, float letter_spacing, int string_num)
+{
+	font.setLineHeight(font.getLineHeight() * line_height);
+	font.setLetterSpacing(font.getLetterSpacing() * letter_spacing);
+	ofSetColor(ofColor::black);
+	float y = font.getLineHeight();
+	ofRectangle t_box = font.getStringBoundingBox(words, 0, y);
+	int xpos = (ofGetWindowWidth() / 2) - (t_box.getWidth() / 2);
+	int ypos = title_font_.getLineHeight() * string_num;
+	font.drawStringAsShapes(words, xpos, ypos);
+}
+
+void ofApp::drawFire()
+{
+	ofSetColor(255);
+	float fire_w = ofGetWindowWidth();
+	float fire_h = ofGetWindowHeight() / 2;
+	fire_.draw(0, fire_h, fire_w, fire_h);
+}
+
+void ofApp::drawDog(float y_surface)
+{
 	float dog_width = ofGetWindowWidth() * 0.15;
 	float dog_height = dog_width;
 	float dog_x = (ofGetWindowWidth() / 2) - (dog_width / 2);
-	float dog_y = ofGetWindowHeight() - dog_height;
+	float dog_y = y_surface - dog_height;
 	ofSetColor(255);
 	dog_.draw(dog_x, dog_y, dog_width, dog_height);
-
-
-	if (title_font_loaded_) {
-		ofSetColor(ofColor::black);
-		string title = "THIS IS FIN";
-		ofRectangle title_box = title_font_.getStringBoundingBox(title, 0, title_font_.getLineHeight());
-		int xpos = (ofGetWindowWidth() / 2) - (title_box.getWidth() / 2);
-		title_font_.drawStringAsShapes(title, xpos, title_font_.getLineHeight());
-
-	}
 }
 
 //TODO: should probably set a max for the height that a volume can produce
@@ -431,9 +288,12 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
 	float screaming = 30;
 	float curVol = 0.0;
+	float max_vol = 30.0; //tested
+	float non_jump = 13.0; //max volume for movement that isn't a full jump
+	float min_vol = 3; //to account for ambient noise not created by the user
 
 	//lets go through each sample and calculate the root mean square which is a rough way to calculate volume	
-	//copied from the openFrameworks audioIn example
+	//from the openFrameworks audioIn example
 	//TODO: don't think i need to do the splitting into left and right even though they did this in the example (try to see if it works the same if you get rid of it)
 	for (int i = 0; i < bufferSize; i++) {
 		left[i] = input[i * 2] * 0.5;
@@ -450,36 +310,15 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 	}
 	else if (current_state_ == GameState::IN_PROGRESS) {
 		//if (!player_is_jumping_) {
-			if (curVol > 10) {
-				cout << curVol << endl;
-				ofVec2f amt(0.0, curVol);
-				box_2d_player_.get()->addImpulseForce(box_2d_player_.get()->getPosition(), amt);
-				player_is_jumping_ = true;
-				player_finished_jump_ = false;
-				
-			}
+		if (curVol < 20 && curVol > min_vol) {
+			//cout << curVol << endl;
+
+			ofVec2f pos(box_2d_player_.get()->getPosition());
+			ofVec2f amt(0.0, min(curVol, max_vol));
+
+			box_2d_player_.get()->addImpulseForce(pos, amt);
+			player_finished_jump_ = false;
+		}
 		//}
-		
-
-		/*if (!player_.is_jumping_) {
-			if (curVol > 10) {
-				player_.jump((curVol * 10), ofGetWindowHeight());
-				player_.curr_platform_ = current_platform_;
-			}
-		}
-
-		if (curVol > 5.0) {
-			amount_moved_ += 0.5;
-
-		}
-		updatePlatforms();*/
-
-	}		
+	}
 }
-
-void ofApp::updatePlayerPosition()
-{
-	player_.setNextYCoordinate();
-}
-
-
