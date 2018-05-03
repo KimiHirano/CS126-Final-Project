@@ -13,6 +13,7 @@ private:
 
 	static const ofColor platform_color_;
 public:
+	int window_w_;
 	void initialize(int window_width, int window_height);
 	int getDistanceToNextPlatform();
 	ofColor getPlatformColor();

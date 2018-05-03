@@ -1,19 +1,8 @@
 #include "ofApp.h"
 
-//TODO: need a way to pause the game right after switching between the start screen and the game screen
-//so the player doesn't immediately start moving due to some remnants of the initial screaming lmao
-
-//TODO: add function comments
-//TODO: add way to check if player has landed on a platform or has landed in between platforms
-//TODO: fix line spacing
-//TODO: maybe clean up setup method a lil
-
-//TODO: remove original player and platform stuff
-//separate functions
-
 //--------------------------------------------------------------
 void ofApp::setup() {
-	//ofSetBackgroundColor(255);
+	ofSetBackgroundColor(255);
 	ofSetVerticalSync(true);
 	ofSetLogLevel(OF_LOG_NOTICE);
 
@@ -27,6 +16,7 @@ void ofApp::setup() {
 	box2d_.createGround();
 	box2d_.setFPS(60.0);
 	box2d_.registerGrabbing();
+	box2d_.createBounds();
 
 	// register the listener so that we get the events
 	ofAddListener(box2d_.contactStartEvents, this, &ofApp::contactStart);
@@ -44,19 +34,14 @@ void ofApp::setup() {
 
 	//add enough platforms to fill the window
 	while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
-		addPlatforms();
+		addPlatform();
 	}
 
-	//addPlayer()?
+	//initialize player (finish setup after start screen goes away
 	box_2d_player_ = std::make_shared<ofxBox2dRect>();
-	box_2d_player_.get()->setPhysics(1.0, 0.0, 0.1);
-	float player_length = ofGetWindowWidth() * 0.1;
-	float player_y = platforms_[0].get()->getPosition().y - player_length;
-	box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 100, player_length, player_length);
-	original_x_ = box_2d_player_.get()->getPosition().x;
+	box_2d_player_.get()->setPhysics(player_d_, player_b_, player_f_);
 
 	int bufferSize = 256;
-
 	left.assign(bufferSize, 0.0);
 	right.assign(bufferSize, 0.0);
 
@@ -68,11 +53,9 @@ void ofApp::setup() {
 	soundStream.setup(this, 0, 2, 44100, bufferSize, 4);
 }
 
-
-
 //--------------------------------------------------------------
 void ofApp::update() {
-	if (!title_font_is_loading_ && !title_font_loaded_) {
+	if (!title_font_loading_ && !title_font_loaded_) {
 		int min_dimension = min(ofGetWindowHeight(), ofGetWindowWidth());
 		int title_font_size = min_dimension / title_font_modifier_;
 
@@ -80,35 +63,21 @@ void ofApp::update() {
 		//https://fonts.google.com/specimen/Gaegu?selection.family=Gaegu
 		title_font_loader_.setup("Gaegu-Bold.ttf", title_font_size);
 
-		title_font_is_loading_ = true;
+		title_font_loading_ = true;
 		title_font_loader_.startThread();
 
-		//check to see if the title font loading thread has finished loading
-	} else if (title_font_is_loading_ && !title_font_loader_.isThreadRunning()) { 
+	//check to see if the title font loading thread has finished loading
+	} else if (title_font_loading_ && !title_font_loader_.isThreadRunning()) {
 		title_font_ = title_font_loader_.font_;
 		title_font_loaded_ = true;
-		title_font_is_loading_ = false;
+		title_font_loading_ = false;
 		title_font_loader_.stopThread();
 	}
 
-	float difference = box_2d_player_.get()->getPosition().x - original_x_;
-	if (player_finished_jump_ && difference != 0) {
-		box_2d_player_.get()->setPosition(original_x_, box_2d_player_.get()->getPosition().y);
-
-		for (int i = 0; i < platforms_.size(); i++) {
-			ofVec2f pos = platforms_[i].get()->getPosition();
-			platforms_[i].get()->setPosition(pos.x - difference, pos.y);
-		}
-		difference = 0;
-		original_x_ = box_2d_player_.get()->getPosition().x;
-	}
-
-	
 	box2d_.update();
-
 	ofRemove(platforms_, Box2DPlatform::shouldRemoveOffScreen);
 	while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
-		addPlatforms();
+		addPlatform();
 	}
 }
 
@@ -118,14 +87,9 @@ void ofApp::draw() {
 	drawFire();
 	if (current_state_ == GameState::START_SCREEN) {
 		drawStart();
-	}
-	else if (current_state_ == GameState::FINISHED) {
+	} else if (current_state_ == GameState::FINISHED) {
 		drawEnd();
-	}
-	else if (current_state_ == GameState::PAUSED) {
-		//drawGamePaused
-	}
-	else {
+	} else {
 		//draw platforms
 		for (int i = 0; i < platforms_.size(); i++) {
 			ofFill();
@@ -139,76 +103,6 @@ void ofApp::draw() {
 		float length = box_2d_player_.get()->getWidth();
 		dog_.draw(pos.x - (length / 2), pos.y - (length / 2), length, length);
 	}
-}
-
-//--------------------------------------------------------------
-void ofApp::contactStart(ofxBox2dContactArgs &e) {
-	if (current_state_ == GameState::IN_PROGRESS) {
-		if (e.a != NULL && e.b != NULL) {
-
-			//end game when player collides with the ground
-			if ((e.a->GetType() != b2Shape::e_polygon ||
-				e.b->GetType() != b2Shape::e_polygon)) {
-				current_state_ = GameState::FINISHED;
-
-			//updates current platform when player lands on new platform
-			} else if (e.a->GetBody() == box_2d_player_.get()->body) {
-				if (e.b->GetBody() != current_platform_->body) {
-					current_platform_ = (Box2DPlatform*)e.b;
-					score_++;
-					cout << "score: " <<score_ << endl;
-
-				}
-			} else if (e.b->GetBody() == box_2d_player_.get()->body) {
-				if (e.a->GetBody() != current_platform_->body) {
-					current_platform_ = (Box2DPlatform*)e.a;
-					score_++;
-					cout << "score: " << score_ << endl;
-				}
-			}
-
-			player_finished_jump_ = true;
-		}
-	}	
-}
-
-//--------------------------------------------------------------
-void ofApp::contactEnd(ofxBox2dContactArgs &e) {
-	//if (e.a != NULL && e.b != NULL) {}
-}
-
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key) {
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h) {
-	title_font_loaded_ = false;
-	//player_.resize(w, h);
-
-}
-
-void ofApp::addPlatform(float x, float y, float w, float h)
-{
-	platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
-	platforms_.back().get()->setPhysics(0, 0.5, 0.5);
-	platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
-	platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
-	platforms_.back().get()->body->SetType(b2_staticBody);
-}
-
-void ofApp::addPlatforms()
-{
-	float width_proportion = ofRandom(0.1, 0.4);
-	float height_proportion = ofRandom(0.2, 0.4);
-
-	float w = ofGetWindowWidth() * width_proportion;
-	float h = ofGetWindowHeight() * height_proportion;
-	float y = ofGetWindowHeight() - (0.5*h);
-	float x = platforms_.back().get()->getPosition().x +
-		platforms_.back().get()->getWidth() +
-		platforms_.back().get()->getDistanceToNextPlatform() /*+ w / 2*/;
-	addPlatform(x, y, w, h);
 }
 
 void ofApp::drawStart()
@@ -250,7 +144,7 @@ void ofApp::drawEnd()
 	}
 }
 
-void ofApp::drawTitle(ofTrueTypeFont font, string words, 
+void ofApp::drawTitle(ofTrueTypeFont font, string words,
 	float line_height, float letter_spacing, int string_num)
 {
 	font.setLineHeight(font.getLineHeight() * line_height);
@@ -281,24 +175,21 @@ void ofApp::drawDog(float y_surface)
 	dog_.draw(dog_x, dog_y, dog_width, dog_height);
 }
 
-//TODO: should probably set a max for the height that a volume can produce
-//TODO: clean up logic
-//TODO: figure out how to make platforms move when player is jumping
 void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 {
 	float screaming = 30;
 	float curVol = 0.0;
-	float max_vol = 30.0; //tested
-	float non_jump = 13.0; //max volume for movement that isn't a full jump
+	float max_vol = 15.0;
 	float min_vol = 3; //to account for ambient noise not created by the user
+	float walking_vol = 7;
+	float small_jump_vol = 10;
+	float mid_jump_vol = 12;
 
-	//lets go through each sample and calculate the root mean square which is a rough way to calculate volume	
+	//calculate the root mean square which is a rough way to calculate volume	
 	//from the openFrameworks audioIn example
-	//TODO: don't think i need to do the splitting into left and right even though they did this in the example (try to see if it works the same if you get rid of it)
 	for (int i = 0; i < bufferSize; i++) {
 		left[i] = input[i * 2] * 0.5;
 		right[i] = input[i * 2 + 1] * 0.5;
-
 		curVol += left[i] * left[i];
 		curVol += right[i] * right[i];
 	}
@@ -306,19 +197,121 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 	if (current_state_ == GameState::START_SCREEN) {
 		if (curVol > screaming) {
 			current_state_ = GameState::IN_PROGRESS;
+
+			float player_length = ofGetWindowWidth() * 0.1;
+			player_x_coordinate_ = ofGetWindowWidth() / 2;
+			box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 
+				100, player_length, player_length);
+			original_x_ = box_2d_player_.get()->getPosition().x;
+			standing_y_ = ofGetWindowHeight() -
+				platforms_[0].get()->getHeight() -
+				(player_length / 2);
+		}
+	} else if (current_state_ == GameState::IN_PROGRESS) {
+		if (curVol > min_vol) {
+			if (curVol < walking_vol) {
+				for (int i = 0; i < platforms_.size(); i++) {
+					ofVec2f pos = platforms_[i].get()->getPosition();
+					platforms_[i].get()->setPosition(pos.x - curVol, pos.y);
+				}
+				box_2d_player_.get()->setPosition(original_x_, 
+					box_2d_player_.get()->getPosition().y);
+
+			} else if (!player_is_jumping_) {
+				ofVec2f pos(box_2d_player_.get()->getPosition());
+				if (curVol < small_jump_vol) {
+					ofVec2f amt(0.0, 15.0);
+					platform_shift_ = 0;
+				} else if (curVol < mid_jump_vol) {
+					ofVec2f amt(0.0, 20.0);
+					platform_shift_ = 0;
+				} else {
+					ofVec2f amt(0.0, 30.0);
+					platform_shift_ = 0;
+				}
+			}
 		}
 	}
-	else if (current_state_ == GameState::IN_PROGRESS) {
-		//if (!player_is_jumping_) {
-		if (curVol < 20 && curVol > min_vol) {
-			//cout << curVol << endl;
 
-			ofVec2f pos(box_2d_player_.get()->getPosition());
-			ofVec2f amt(0.0, min(curVol, max_vol));
+}
 
-			box_2d_player_.get()->addImpulseForce(pos, amt);
-			player_finished_jump_ = false;
+//--------------------------------------------------------------
+void ofApp::contactStart(ofxBox2dContactArgs &e) {
+	if (current_state_ == GameState::IN_PROGRESS) {
+		if (e.a != NULL && e.b != NULL) {
+
+			//end game when player collides with the ground
+			if ((e.a->GetType() != b2Shape::e_polygon ||
+				e.b->GetType() != b2Shape::e_polygon)) {
+				//current_state_ = GameState::FINISHED;
+
+			//updates current platform when player lands on new platform
+			} else if (e.a->GetBody() == box_2d_player_.get()->body) {
+				if (e.b->GetBody() != current_platform_->body) {
+					current_platform_ = (Box2DPlatform*)e.b;
+					score_++;
+				}
+			} else if (e.b->GetBody() == box_2d_player_.get()->body) {
+				if (e.a->GetBody() != current_platform_->body) {
+					current_platform_ = (Box2DPlatform*)e.a;
+					score_++;
+				}
+			}
+			standing_y_ = box_2d_player_.get()->getPosition().y;
+			player_is_jumping_ = false;
 		}
-		//}
 	}
 }
+
+//--------------------------------------------------------------
+void ofApp::contactEnd(ofxBox2dContactArgs &e) {
+	if (e.a != NULL && e.b != NULL) {
+		//updates current platform when player lands on new platform
+		if (e.a->GetBody() == box_2d_player_.get()->body) {
+			if (e.b->GetBody() == current_platform_->body) {
+				player_is_jumping_ = true;
+			}
+		} else if (e.b->GetBody() == box_2d_player_.get()->body) {
+			if (e.a->GetBody() == current_platform_->body) {
+				player_is_jumping_ = true;
+
+			}
+		}
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
+	if (key == 'r' || key == 'R') {
+		current_state_ = GameState::START_SCREEN;
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::windowResized(int w, int h) {
+	title_font_loaded_ = false;
+}
+
+void ofApp::addPlatform(float x, float y, float w, float h)
+{
+	platforms_.push_back(shared_ptr<Box2DPlatform>(new Box2DPlatform));
+	platforms_.back().get()->setPhysics(platform_d_, platform_b_, platform_f_);
+	platforms_.back().get()->setup(box2d_.getWorld(), x, y, w, h);
+	platforms_.back().get()->initialize(ofGetWindowWidth(), ofGetWindowHeight());
+	platforms_.back().get()->body->SetType(b2_kinematicBody);
+}
+
+void ofApp::addPlatform()
+{
+	float width_proportion = ofRandom(0.1, 0.4);
+	float height_proportion = ofRandom(0.2, 0.4);
+
+	float w = ofGetWindowWidth() * width_proportion;
+	float h = ofGetWindowHeight() * height_proportion;
+	float y = ofGetWindowHeight() - (0.5*h);
+	float x = platforms_.back().get()->getPosition().x +
+		platforms_.back().get()->getWidth() +
+		platforms_.back().get()->getDistanceToNextPlatform();
+	addPlatform(x, y, w, h);
+}
+

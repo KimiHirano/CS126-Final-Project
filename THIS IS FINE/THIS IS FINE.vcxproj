@@ -172,12 +172,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\box2dplatform.cpp" />
-    <ClCompile Include="src\box2dplayer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\fontloader.cpp" />
-    <ClCompile Include="src\platform.cpp" />
-    <ClCompile Include="src\player.cpp" />
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2d.cpp" />
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2dBaseShape.cpp" />
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2dCircle.cpp" />
@@ -233,26 +230,11 @@
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\Box2D\Rope\b2Rope.cpp" />
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\del_impl.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxButton.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGuiGroup.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxLabel.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxPanel.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSlider.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\src\ofxXmlSettings.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxml.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxmlerror.cpp" />
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\box2dplatform.h" />
-    <ClInclude Include="src\box2dplayer.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\fontloader.h" />
-    <ClInclude Include="src\platform.h" />
-    <ClInclude Include="src\player.h" />
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2d.h" />
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2dBaseShape.h" />
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2dCircle.h" />
@@ -317,17 +299,6 @@
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\dpoint.hpp" />
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\triangle.h" />
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\triangle_impl.hpp" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxButton.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGui.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGuiGroup.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxLabel.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxPanel.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSlider.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\src\ofxXmlSettings.h" />
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxml.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

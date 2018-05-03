@@ -16,12 +16,6 @@
     <ClCompile Include="src\ofApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\platform.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\player.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2d.cpp">
       <Filter>addons\ofxBox2d\src</Filter>
     </ClCompile>
@@ -187,45 +181,6 @@
     <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\del_impl.cpp">
       <Filter>addons\ofxBox2d\libs\triangle</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxButton.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGuiGroup.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxLabel.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxPanel.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSlider.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.cpp">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\src\ofxXmlSettings.cpp">
-      <Filter>addons\ofxXmlSettings\src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxml.cpp">
-      <Filter>addons\ofxXmlSettings\libs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxmlerror.cpp">
-      <Filter>addons\ofxXmlSettings\libs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxmlparser.cpp">
-      <Filter>addons\ofxXmlSettings\libs</Filter>
-    </ClCompile>
-    <ClCompile Include="src\box2dplayer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\box2dplatform.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -273,21 +228,6 @@
     <Filter Include="addons\ofxBox2d\libs\triangle">
       <UniqueIdentifier>{59DDA46B-31F2-D064-1590-F1FA}</UniqueIdentifier>
     </Filter>
-    <Filter Include="addons\ofxGui">
-      <UniqueIdentifier>{4F2A59AF-5F4E-704B-D067-EC13}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="addons\ofxGui\src">
-      <UniqueIdentifier>{645E9533-4DCD-6179-1CDF-CB65}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="addons\ofxXmlSettings">
-      <UniqueIdentifier>{877F005D-13E6-0592-1D97-F2E3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="addons\ofxXmlSettings\src">
-      <UniqueIdentifier>{CCB2AC63-49D2-977C-CFE8-AEAD}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="addons\ofxXmlSettings\libs">
-      <UniqueIdentifier>{687714A8-1662-FA1C-261F-50F0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
@@ -297,12 +237,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\ofApp.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\platform.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\player.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\src\ofxBox2d.h">
@@ -496,42 +430,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxBox2d\libs\triangle\triangle_impl.hpp">
       <Filter>addons\ofxBox2d\libs\triangle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxBaseGui.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxButton.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGui.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxGuiGroup.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxLabel.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxPanel.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSlider.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxSliderGroup.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxGui\src\ofxToggle.h">
-      <Filter>addons\ofxGui\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\src\ofxXmlSettings.h">
-      <Filter>addons\ofxXmlSettings\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Downloads\of_v0.9.8_vs_release (1)\of_v0.9.8_vs_release\addons\ofxXmlSettings\libs\tinyxml.h">
-      <Filter>addons\ofxXmlSettings\libs</Filter>
-    </ClInclude>
-    <ClInclude Include="src\box2dplayer.h">
-      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\box2dplatform.h">
       <Filter>src</Filter>
