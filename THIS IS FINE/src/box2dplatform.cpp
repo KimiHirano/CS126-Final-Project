@@ -6,11 +6,9 @@ void Box2DPlatform::initialize(int window_width, int window_height)
 {
 	window_w_ = window_width;
 	rand_num_generator_ = std::mt19937(rand());
-	rand_dist_between_platforms_ = std::uniform_real_distribution<>(.05, .2);
+	rand_dist_between_platforms_ = std::uniform_real_distribution<>(.05, .15);
 	d_proportion_ = rand_dist_between_platforms_(rand_num_generator_);
 	distance_to_next_platform_ = d_proportion_ * window_width;
-	setRotationFriction(3000.0);
-
 }
 
 int Box2DPlatform::getDistanceToNextPlatform()

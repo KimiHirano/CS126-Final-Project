@@ -73,12 +73,14 @@ void ofApp::update() {
 		title_font_loading_ = false;
 		title_font_loader_.stopThread();
 	}
-
-	box2d_.update();
-	ofRemove(platforms_, Box2DPlatform::shouldRemoveOffScreen);
-	while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
-		addPlatform();
+	if (should_update_) {
+		box2d_.update();
+		ofRemove(platforms_, Box2DPlatform::shouldRemoveOffScreen);
+		while (platforms_.back().get()->getPosition().x < ofGetWindowWidth()) {
+			addPlatform();
+		}
 	}
+	should_update_ = true;
 }
 
 //--------------------------------------------------------------
@@ -198,41 +200,50 @@ void ofApp::audioIn(float * input, int bufferSize, int nChannels)
 		if (curVol > screaming) {
 			current_state_ = GameState::IN_PROGRESS;
 
-			float player_length = ofGetWindowWidth() * 0.1;
+			//initialize game 
+			float player_length = ofGetWindowWidth() * 0.075;
 			player_x_coordinate_ = ofGetWindowWidth() / 2;
-			box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_, 
+			box_2d_player_.get()->setup(box2d_.getWorld(), player_x_coordinate_,
 				100, player_length, player_length);
 			original_x_ = box_2d_player_.get()->getPosition().x;
 			standing_y_ = ofGetWindowHeight() -
 				platforms_[0].get()->getHeight() -
 				(player_length / 2);
-		}
-	} else if (current_state_ == GameState::IN_PROGRESS) {
-		if (curVol > min_vol) {
-			if (curVol < walking_vol) {
-				for (int i = 0; i < platforms_.size(); i++) {
-					ofVec2f pos = platforms_[i].get()->getPosition();
-					platforms_[i].get()->setPosition(pos.x - curVol, pos.y);
-				}
-				box_2d_player_.get()->setPosition(original_x_, 
-					box_2d_player_.get()->getPosition().y);
-
-			} else if (!player_is_jumping_) {
-				ofVec2f pos(box_2d_player_.get()->getPosition());
-				if (curVol < small_jump_vol) {
-					ofVec2f amt(0.0, 15.0);
-					platform_shift_ = 0;
-				} else if (curVol < mid_jump_vol) {
-					ofVec2f amt(0.0, 20.0);
-					platform_shift_ = 0;
-				} else {
-					ofVec2f amt(0.0, 30.0);
-					platform_shift_ = 0;
-				}
+			for (int i = 0; i < platforms_.size(); i++) {
+				ofVec2f pos = platforms_[i].get()->getPosition();
+				platforms_[i].get()->setVelocity(-0.2, 0.0);
 			}
 		}
 	}
+	else if (current_state_ == GameState::IN_PROGRESS) {
+		ofVec2f pos(box_2d_player_.get()->getPosition());
+		if (curVol > min_vol) {
+			if (curVol < walking_vol) {
+				if (!moved_forward_) {
+					ofVec2f amt(0.02, 0.02);
+					float w = box_2d_player_.get()->getWidth();
+					box_2d_player_.get()->addImpulseForce(pos, amt);
+					moved_forward_ = true;
+				}
+				moved_forward_ = !moved_forward_;
 
+			}
+			else if (!player_is_jumping_) {
+				ofVec2f amt;
+				if (curVol < small_jump_vol) {
+					ofVec2f amt(0.2, 20.0);
+				}
+				else if (curVol < mid_jump_vol) {
+					ofVec2f amt(0.2, 35.0);
+				}
+				else {
+					ofVec2f amt(0.2, 45);
+				}
+				box_2d_player_.get()->addImpulseForce(pos, amt);
+
+			}
+		}
+	}
 }
 
 //--------------------------------------------------------------
@@ -243,7 +254,7 @@ void ofApp::contactStart(ofxBox2dContactArgs &e) {
 			//end game when player collides with the ground
 			if ((e.a->GetType() != b2Shape::e_polygon ||
 				e.b->GetType() != b2Shape::e_polygon)) {
-				//current_state_ = GameState::FINISHED;
+				current_state_ = GameState::FINISHED;
 
 			//updates current platform when player lands on new platform
 			} else if (e.a->GetBody() == box_2d_player_.get()->body) {

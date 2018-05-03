@@ -21,12 +21,13 @@ class ofApp : public ofBaseApp{
 		vector < shared_ptr<Box2DPlatform>> platforms_;
 		Box2DPlatform* current_platform_;
 
-		bool player_moved_forward_ = false;
+		bool should_update_ = true;
+		bool moved_forward_ = false;
 		bool player_is_jumping_ = true;
 
 		float original_x_;
 		float standing_y_;
-		int platform_shift_;
+		int platform_shift_ = 0;
 		int player_x_coordinate_;
 
 		bool title_font_loading_ = false;
@@ -36,13 +37,13 @@ class ofApp : public ofBaseApp{
 		ofTrueTypeFont title2_font_;
 		const float title_font_modifier_ = 10;
 
-		const float player_d_ = 5.0;
+		const float player_d_ = 10.0;
 		const float player_b_ = 0.0;
 		const float player_f_ = 0.1;
 
 		const float platform_d_ = 0.0;
 		const float platform_b_ = 0.0;
-		const float platform_f_ = 0.2;
+		const float platform_f_ = 0.5;
 
 		int score_ = 0;
 
